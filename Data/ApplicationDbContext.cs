@@ -55,6 +55,15 @@ public class ApplicationDbContext(
     {
         base.OnModelCreating(builder);
 
+        // Keep customer phone numbers unique when present, matching the account flow.
+        builder.Entity<ApplicationUser>()
+            .Property(user => user.PhoneNumber)
+            .HasMaxLength(450);
+        builder.Entity<ApplicationUser>()
+            .HasIndex(user => user.PhoneNumber)
+            .IsUnique()
+            .HasFilter("[PhoneNumber] IS NOT NULL");
+
         // Apply all IEntityTypeConfiguration<T> implementations.
         builder.ApplyConfigurationsFromAssembly(
             typeof(ApplicationDbContext).Assembly);

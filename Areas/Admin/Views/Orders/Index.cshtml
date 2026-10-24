@@ -1,6 +1,55 @@
 @model IEnumerable<EddaStore.Models.Orders.Order>
 @using Microsoft.AspNetCore.Mvc.Rendering
-@{ ViewData["Title"]="إدارة الطلبات"; ViewData["Heading"]="الطلبات"; var statuses=ViewBag.Statuses as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>(); }
-<div class="admin-page-header"><div><h2>الطلبات</h2><p>تابع الطلبات وحدّث حالتها.</p></div></div>
-<form method="get" class="admin-filter"><input name="search" value="@ViewBag.Search" placeholder="رقم الطلب"/><select name="status" asp-items="statuses"><option value="">كل الحالات</option></select><button class="dashboard-primary-btn">بحث</button><a asp-action="Index" class="admin-secondary-btn">إعادة ضبط</a></form>
-<div class="admin-table-card"><table class="admin-table"><thead><tr><th>رقم الطلب</th><th>تاريخ الطلب</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody>@foreach(var x in Model){<tr><td><strong>#@x.OrderNumber</strong></td><td>@(x.PlacedAt?.ToLocalTime().ToString("yyyy/MM/dd HH:mm") ?? "—")</td><td>@x.TotalAmount.ToString("N2") @x.Currency</td><td><span class="admin-badge">@x.Status</span></td><td><a asp-action="Details" asp-route-id="@x.Id" class="admin-link">عرض وإدارة</a></td></tr>}@if(!Model.Any()){<tr><td colspan="5" class="admin-empty">لا توجد طلبات مطابقة.</td></tr>}</tbody></table></div>
+@{
+    ViewData["Title"] = "إدارة الطلبات"; ViewData["Heading"] = "الطلبات"; var statuses = ViewBag.Statuses as
+    IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+}
+<div class="admin-page-header">
+    <div>
+        <h2>الطلبات</h2>
+        <p>تابع الطلبات وحدّث حالتها.</p>
+    </div>
+</div>
+<form method="get" class="admin-filter"><input name="search" value="@ViewBag.Search" placeholder="رقم الطلب" /><select
+    name="status" asp-items="statuses">
+    <option value="">كل الحالات</option>
+</select><button class="dashboard-primary-btn">بحث</button><a asp-action="Index" class="admin-secondary-btn">إعادة
+ضبط</a></form>
+<div class="admin-table-card">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>رقم الطلب</th>
+                <th>تاريخ الطلب</th>
+                <th>الإجمالي</th>
+                <th>الحالة</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>@foreach(var x in Model){
+            <tr>
+                <td><strong>#@x.OrderNumber</strong></td>
+                <td>@(x.PlacedAt?.ToLocalTime().ToString("yyyy/MM/dd HH:mm") ?? "—")</td>
+                <td>@x.TotalAmount.ToString("N2") @x.Currency</td>
+                <td><span class="admin-badge">@(x.Status switch
+                    {
+                        "Pending" => "قيد الانتظار",
+                        "Processing" => "قيد التجهيز",
+                        "Shipped" => "تم الشحن",
+                        "Delivered" => "تم التسليم",
+                        "Cancelled" => "ملغي",
+                        _ =>
+                                            x.Status
+                    })</span></td>
+                    <td><a asp-action="Details" asp-route-id="@x.Id" class="admin-link">عرض وإدارة</a></td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="5" class="admin-empty">لا توجد طلبات مطابقة.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

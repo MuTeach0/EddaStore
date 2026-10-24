@@ -1,5 +1,57 @@
 @model EddaStore.Models.Orders.Order
 @using Microsoft.AspNetCore.Mvc.Rendering
-@{ ViewData["Title"]=$"طلب #{Model.OrderNumber}"; ViewData["Heading"]="تفاصيل الطلب"; var statuses=ViewBag.Statuses as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>(); }
-<div class="admin-page-header"><div><h2>طلب #@Model.OrderNumber</h2><p>تم إنشاؤه: @(Model.PlacedAt?.ToLocalTime().ToString("yyyy/MM/dd HH:mm") ?? "—")</p></div><a asp-action="Index" class="admin-secondary-btn">العودة للطلبات</a></div>
-<div class="admin-details-grid"><section class="admin-table-card"><h3>عناصر الطلب</h3><table class="admin-table"><thead><tr><th>المنتج</th><th>السعر</th><th>الكمية</th><th>الإجمالي</th></tr></thead><tbody>@foreach(var item in Model.Items){<tr><td>@item.ProductName <small>@item.SKU</small></td><td>@item.UnitPrice.ToString("N2")</td><td>@item.Quantity</td><td>@item.LineTotal.ToString("N2")</td></tr>}</tbody></table><div class="admin-total">الإجمالي النهائي: @Model.TotalAmount.ToString("N2") @Model.Currency</div></section><aside class="admin-form-card"><h3>حالة الطلب</h3><form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post"><label>الحالة الحالية</label><select name="status" asp-items="statuses"></select><button class="dashboard-primary-btn">حفظ الحالة</button></form><h3>سجل الحالات</h3><ul class="admin-history">@foreach(var h in Model.StatusHistory.OrderByDescending(x=>x.ChangedAt)){<li><strong>@h.Status</strong><span>@h.ChangedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</span></li>}</ul></aside></div>
+@{
+    ViewData["Title"] = $"طلب #{Model.OrderNumber}"; ViewData["Heading"] = "تفاصيل الطلب"; var statuses = ViewBag.Statuses as
+    IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+}
+<div class="admin-page-header">
+    <div>
+        <h2>طلب #@Model.OrderNumber</h2>
+        <p>تم إنشاؤه: @(Model.PlacedAt?.ToLocalTime().ToString("yyyy/MM/dd HH:mm") ?? "—")</p>
+    </div><a asp-action="Index" class="admin-secondary-btn">العودة للطلبات</a>
+</div>
+<div class="admin-details-grid">
+    <section class="admin-table-card">
+        <h3>عناصر الطلب</h3>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>المنتج</th>
+                    <th>السعر</th>
+                    <th>الكمية</th>
+                    <th>الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody>@foreach(var item in Model.Items){
+                <tr>
+                    <td>@item.ProductName <small>@item.SKU</small></td>
+                    <td>@item.UnitPrice.ToString("N2")</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.LineTotal.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="admin-total">الإجمالي النهائي: @Model.TotalAmount.ToString("N2") @Model.Currency</div>
+</section>
+<aside class="admin-form-card">
+    <h3>حالة الطلب</h3>
+    <form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post"><label>الحالة الحالية</label><select
+        name="status" asp-items="statuses"></select><button class="dashboard-primary-btn">حفظ الحالة</button>
+    </form>
+    <h3>سجل الحالات</h3>
+    <ul class="admin-history">@foreach(var h in Model.StatusHistory.OrderByDescending(x=>x.ChangedAt)){
+        <li>
+            <strong>@(h.Status switch
+                {
+                    "Pending" => "قيد الانتظار",
+                    "Processing" => "قيد التجهيز",
+                    "Shipped" => "تم الشحن",
+                    "Delivered" => "تم التسليم",
+                    "Cancelled" => "ملغي",
+                    _ => h.Status
+                })</strong><span>@h.ChangedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</span></li>
+            }
+        </ul>
+    </aside>
+</div>

@@ -1,47 +1,118 @@
 @model EddaStore.Models.Products.Product
-@{ ViewData["Title"] = Model.Name; var image = Model.Images.OrderByDescending(i=>i.IsPrimary).ThenBy(i=>i.SortOrder).FirstOrDefault(); }
-<section class="page-head"><div class="container"><div class="breadcrumbs"><a asp-controller="Home" asp-action="Index">الرئيسية</a> / <a asp-action="Index">المنتجات</a> / @Model.Name</div><h1>تفاصيل المنتج</h1></div></section>
-<div class="container section"><section class="detail-grid"><div class="detail-image">@if(!string.IsNullOrWhiteSpace(image?.ImageUrl)){<img src="@image.ImageUrl" alt="@(image?.AltText ?? Model.Name)"/>}else{<div class="empty">لا توجد صورة للمنتج</div>}</div><div class="detail-info"><span class="eyebrow">@Model.Category.Name — @Model.Brand.Name</span><h1>@Model.Name</h1><div class="rating">★ منتج مختار بعناية</div><div class="price-row"><span class="price">@Model.Price.ToString("N0") ج.م</span>@if(Model.CompareAtPrice > Model.Price){<span class="old-price">@Model.CompareAtPrice?.ToString("N0") ج.م</span>}</div><span class="stock">@(Model.StockQuantity > 0 ? "● متوفر في المخزون" : "غير متوفر حاليًا")</span><p>@Model.Description</p>@if(User.Identity?.IsAuthenticated == true){<form asp-controller="Wishlist" asp-action="Add" method="post"><input type="hidden" name="productId" value="@Model.Id"/><input type="hidden" name="returnUrl" value="@Context.Request.Path"/><button class="btn btn-outline" type="submit">♡ أضف للمفضلة</button></form>}@if(Model.StockQuantity > 0){<form asp-controller="Cart" asp-action="Add" method="post"><input type="hidden" name="productId" value="@Model.Id"/><input type="hidden" name="returnUrl" value="@Context.Request.Path"/><div class="detail-actions"><div class="quantity"><input aria-label="الكمية" type="number" name="quantity" value="1" min="1" max="@Model.StockQuantity"/></div><button class="btn btn-primary" type="submit">أضف للسلة</button></div></form>}<div class="feature-list"><span>✓ تفاصيل واضحة وأسعار مباشرة</span><span>✓ تجربة شراء بسيطة وآمنة</span><span>✓ تصفح منتجات تقنية مختارة</span></div></div></section></div>
-<div class="container section">
-    <section class="panel">
-        <h2>المراجعات المعتمدة</h2>
-        @{
-            var reviews = ViewBag.Reviews as List<EddaStore.Models.Customers.Review> ?? new();
-        }
-        @if (!reviews.Any())
+@{
+    ViewData["Title"] = Model.Name;
+    ViewData["MetaDescription"] = string.IsNullOrWhiteSpace(Model.Description) ? $"تفاصيل وسعر {Model.Name} من {Model.Brand.Name} في متجر عِدّة." : (Model.Description.Length > 155 ? Model.Description[..155] : Model.Description);
+    var image = Model.Images.OrderByDescending(i => i.IsPrimary).ThenBy(i => i.SortOrder).FirstOrDefault();
+    var productSchema = new Dictionary<string, object?>
+    {
+        ["\u0040context"] = "https://schema.org",
+        ["\u0040type"] = "Product",
+        ["name"] = Model.Name,
+        ["description"] = Model.Description ?? string.Empty,
+        ["sku"] = Model.SKU ?? string.Empty,
+        ["brand"] = new Dictionary<string, object?> { ["\u0040type"] = "Brand", ["name"] = Model.Brand.Name },
+        ["offers"] = new Dictionary<string, object?>
         {
-            <p class="muted">لا توجد مراجعات معتمدة حتى الآن.</p>
+            ["\u0040type"] = "Offer",
+            ["priceCurrency"] = "EGP",
+            ["price"] = Model.Price,
+            ["availability"] = Model.StockQuantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            ["url"] = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.PathBase}{Context.Request.Path}"
         }
-        else
-        {
-            <div class="review-list">
-                @foreach (var review in reviews)
-                {
-                    <article class="review-item">
-                        <strong>★ @review.Rating / 5</strong>
-                        <p>@review.Comment</p>
-                    </article>
-                }
-            </div>
-        }
-
-        @if (User.Identity?.IsAuthenticated == true)
-        {
-            <form asp-controller="Store" asp-action="SubmitReview" method="post" class="form-grid" style="margin-top:16px;">
-                <input type="hidden" name="slug" value="@Model.Slug" />
-                <label>التقييم
-                    <select name="rating">
-                        @for (var i = 5; i >= 1; i--)
-                        {
-                            <option value="@i">@i</option>
-                        }
-                    </select>
-                </label>
-                <label>تعليق
-                    <textarea name="comment" rows="3"></textarea>
-                </label>
-                <button class="btn btn-primary" type="submit">إرسال مراجعة</button>
-            </form>
-        }
+    };
+    if (!string.IsNullOrWhiteSpace(image?.ImageUrl))
+    {
+        productSchema["image"] = image.ImageUrl.StartsWith("/") ?
+$"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.PathBase}{image.ImageUrl}" : image.ImageUrl;
+    }
+}
+@section StructuredData {
+    <script type="application/ld+json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(productSchema))</script>
+}
+<section class="page-head">
+    <div class="container">
+        <div class="breadcrumbs"><a asp-controller="Home" asp-action="Index">الرئيسية</a> / <a
+            asp-action="Index">المنتجات</a> / @Model.Name</div>
+        </div>
     </section>
-</div>
+    <div class="container section">
+        <section class="detail-grid">
+            <div class="detail-image">@if(!string.IsNullOrWhiteSpace(image?.ImageUrl)){
+                <img src="@image.ImageUrl" alt="@(image?.AltText ?? Model.Name)" />
+            }else
+            {
+
+                <div class="empty">لا توجد صورة للمنتج</div>
+            }
+        </div>
+        <div class="detail-info"><span class="eyebrow">@Model.Category.Name — @Model.Brand.Name</span>
+            <h1>@Model.Name</h1>
+            <div class="price-row"><span class="price">@Model.Price.ToString("N0") ج.م</span>@if(Model.CompareAtPrice >
+                Model.Price){
+                    <span class="old-price">@Model.CompareAtPrice?.ToString("N0") ج.م</span>
+                }
+            </div><span class="stock">@(Model.StockQuantity > 0 ? "● متوفر في المخزون" : "غير متوفر حاليًا")</span>
+            <p>@Model.Description</p>@if(User.Identity?.IsAuthenticated == true){
+            <form asp-controller="Wishlist" asp-action="Add" method="post"><input type="hidden" name="productId"
+                                                                                      value="@Model.Id" /><input type="hidden" name="returnUrl" value="@Context.Request.Path" /><button
+                class="btn btn-outline" type="submit">♡ أضف للمفضلة</button></form>
+            }
+            @if (Model.StockQuantity > 0)
+            {
+                <form asp-controller="Cart" asp-action="Add" method="post"><input type="hidden" name="productId"
+                                                                                      value="@Model.Id" /><input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                    <div class="detail-actions">
+                        <div class="quantity"><input aria-label="الكمية" type="number" name="quantity" value="1" min="1"
+                                                         max="@Model.StockQuantity" /></div><button class="btn btn-primary" type="submit">أضف
+                            للسلة</button>
+                        </div>
+                    </form>
+                }
+                <div class="feature-list"><span>راجع المواصفات والوصف قبل الشراء</span><span>حالة التوفر موضحة في
+                    صفحة المنتج</span><span>للاستفسار، تواصل مع خدمة العملاء</span></div>
+                </div>
+            </section>
+        </div>
+        <div class="container section">
+            <section class="panel">
+                <h2>المراجعات المعتمدة</h2>
+                @{
+                    var reviews = ViewBag.Reviews as List<EddaStore.Models.Customers.Review> ?? new();
+                }
+                @if (!reviews.Any())
+                {
+                    <p class="muted">لا توجد مراجعات معتمدة حتى الآن.</p>
+                }
+                else
+                {
+                    <div class="review-list">
+                        @foreach (var review in reviews)
+                        {
+                            <article class="review-item">
+                                <strong>★ @review.Rating / 5</strong>
+                                <p>@review.Comment</p>
+                            </article>
+                        }
+                    </div>
+                }
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form asp-controller="Store" asp-action="SubmitReview" method="post" class="form-grid review-form">
+                        <input type="hidden" name="slug" value="@Model.Slug" />
+                        <label>التقييم
+                            <select name="rating">
+                                @for (var i = 5; i >= 1; i--)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            </select>
+                        </label>
+                        <label>تعليق
+                            <textarea name="comment" rows="3" maxlength="1000" required></textarea>
+                        </label>
+                        <button class="btn btn-primary" type="submit">إرسال مراجعة</button>
+                    </form>
+                }
+            </section>
+        </div>

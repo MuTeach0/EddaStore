@@ -1,4 +1,56 @@
 @model EddaStore.Models.ViewModels.Store.CartViewModel
-@{ ViewData["Title"] = "سلة التسوق"; }
-<section class="page-head"><div class="container"><div class="breadcrumbs"><a asp-controller="Home" asp-action="Index">الرئيسية</a> / سلة التسوق</div><h1>سلة التسوق</h1><p>راجع مشترياتك قبل متابعة الطلب.</p></div></section>
-<div class="container section">@if(!Model.Items.Any()){<div class="empty"><div class="empty-icon">🛒</div><h2>سلتك فارغة</h2><p>ابدأ باختيار المنتجات المناسبة لك.</p><a asp-controller="Store" asp-action="Index" class="btn btn-primary">استكشف المنتجات</a></div>}else{<div class="cart-layout"><section class="panel"><h2>منتجاتك</h2>@foreach(var item in Model.Items){<article class="cart-item">@if(!string.IsNullOrEmpty(item.ImageUrl)){<img src="@item.ImageUrl" alt="@item.Name"/>}<div><h3>@item.Name</h3><p>@item.UnitPrice.ToString("N0") ج.م</p><form asp-action="Update" method="post" class="quantity"><input type="hidden" name="productId" value="@item.ProductId"/><input aria-label="الكمية" name="quantity" type="number" value="@item.Quantity" min="1" max="@item.AvailableQuantity"/><button type="submit">تحديث</button></form></div><div><strong class="price">@item.LineTotal.ToString("N0") ج.م</strong><form asp-action="Remove" method="post"><input type="hidden" name="productId" value="@item.ProductId"/><button class="text-link" type="submit">حذف</button></form></div></article>}</section><aside class="panel"><h2>ملخص الطلب</h2><div class="summary-line"><span>الإجمالي الفرعي</span><strong>@Model.Subtotal.ToString("N0") ج.م</strong></div><div class="summary-line"><span>الشحن</span><span>مجاني</span></div><div class="summary-line summary-total"><span>الإجمالي</span><strong>@Model.Subtotal.ToString("N0") ج.م</strong></div><a class="btn btn-primary btn-block" asp-controller="Checkout" asp-action="Index">إتمام الطلب</a></aside></div>}</div>
+@{
+    ViewData["Title"] = "سلة التسوق"; ViewData["Robots"] = "noindex, follow";
+}
+<section class="page-head">
+    <div class="container">
+        <div class="breadcrumbs"><a asp-controller="Home" asp-action="Index">الرئيسية</a> / سلة التسوق</div>
+        <h1>سلة التسوق</h1>
+        <p>راجع مشترياتك قبل متابعة الطلب.</p>
+    </div>
+</section>
+<div class="container section">@if(!Model.Items.Any()){
+    <div class="empty">
+        <div class="empty-icon" aria-hidden="true">▱</div>
+        <h2>سلتك فارغة</h2>
+        <p>ابدأ باختيار المنتجات المناسبة لك.</p><a asp-controller="Store" asp-action="Index"
+                                                    class="btn btn-primary">استكشف المنتجات</a>
+    </div>
+}else
+{
+
+    <div class="cart-layout">
+        <section class="panel">
+            <h2>منتجاتك</h2>@foreach(var item in Model.Items){
+            <article class="cart-item">
+                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                {
+                    <img src="@item.ImageUrl" alt="@item.Name" />
+                }
+                <div>
+                    <h3>@item.Name</h3>
+                    <p>@item.UnitPrice.ToString("N0") ج.م</p>
+                    <form asp-action="Update" method="post" class="quantity"><input type="hidden" name="productId"
+                                                                                        value="@item.ProductId" /><input aria-label="الكمية" name="quantity" type="number"
+                                                         value="@item.Quantity" min="1" max="@item.AvailableQuantity" /><button
+                        type="submit">تحديث</button></form>
+                    </div>
+                    <div><strong class="price">@item.LineTotal.ToString("N0") ج.م</strong>
+                        <form asp-action="Remove" method="post"><input type="hidden" name="productId"
+                                                                           value="@item.ProductId" /><button class="text-link" type="submit">حذف</button></form>
+                        </div>
+                    </article>
+                }
+            </section>
+            <aside class="panel">
+                <h2>ملخص الطلب</h2>
+                <div class="summary-line"><span>الإجمالي الفرعي</span><strong>@Model.Subtotal.ToString("N0") ج.م</strong>
+                </div>
+                <div class="summary-line"><span>الشحن</span><span>مجاني</span></div>
+                <div class="summary-line summary-total"><span>الإجمالي</span><strong>@Model.Subtotal.ToString("N0")
+                    ج.م</strong></div><a class="btn btn-primary btn-block" asp-controller="Checkout"
+                                         asp-action="Index">إتمام الطلب</a>
+                </aside>
+            </div>
+        }
+    </div>

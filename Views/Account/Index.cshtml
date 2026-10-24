@@ -1,4 +1,135 @@
 @model EddaStore.Models.ViewModels.Store.AccountViewModel
-@{ ViewData["Title"] = "حسابي"; }
-<section class="page-head"><div class="container"><div class="breadcrumbs"><a asp-controller="Home" asp-action="Index">الرئيسية</a> / حسابي</div><h1>حسابي</h1><p>@Model.Email</p></div></section>
-<div class="container section account-layout"><nav class="side-nav"><a class="active" asp-action="Index">نظرة عامة</a><a asp-controller="Wishlist" asp-action="Index">المفضلة</a><a asp-controller="Cart" asp-action="Index">سلة المشتريات</a><a asp-area="Identity" asp-page="/Account/Manage/Index">إعدادات الهوية</a></nav><div><section class="panel"><h2>ملخص الحساب</h2><div class="stat-grid"><div class="stat"><strong>@Model.Orders.Count</strong><span>إجمالي الطلبات</span></div><div class="stat"><strong>@Model.Orders.Count(x=>x.Status is "Pending" or "Processing" or "Shipped")</strong><span>طلبات قيد التنفيذ</span></div><div class="stat"><strong>@Model.WishlistCount</strong><span>المنتجات المفضلة</span></div></div></section><section class="panel"><h2>طلباتي</h2>@if(!Model.Orders.Any()){<p class="muted">لا توجد طلبات حتى الآن.</p>}else{<div class="table-wrap"><table><thead><tr><th>رقم الطلب</th><th>التاريخ</th><th>الحالة</th><th>الإجمالي</th><th></th></tr></thead><tbody>@foreach(var order in Model.Orders){<tr><td>@order.OrderNumber</td><td>@order.PlacedAt?.ToLocalTime().ToString("yyyy/MM/dd")</td><td>@order.Status</td><td>@order.TotalAmount.ToString("N0") ج.م</td><td><a asp-action="Details" asp-route-id="@order.Id">التفاصيل</a></td></tr>}</tbody></table></div>}</section><section class="panel"><h2>عناوين الشحن</h2>@if(Model.Addresses.Any()){<ul>@foreach(var address in Model.Addresses){<li>@address.FullName — @address.City، @address.StreetAddress</li>}</ul>}<form asp-action="AddAddress" method="post" class="form-grid"><label>الاسم<input name="FullName" required/></label><label>الهاتف<input name="PhoneNumber" required/></label><label>المدينة<input name="City" required/></label><label>العنوان<input name="StreetAddress" required/></label><label><input type="checkbox" name="IsDefault" value="true"/> عنوان افتراضي</label><button class="btn btn-outline" type="submit">إضافة عنوان</button></form></section></div></div>
+@{
+    ViewData["Title"] = "حسابي"; ViewData["Robots"] = "noindex, follow";
+}
+<section class="account-page">
+    <div class="container account-wrap">
+        <nav class="account-breadcrumb"><a asp-controller="Home" asp-action="Index">الرئيسية</a><span> /
+        </span><span>حسابي</span></nav>
+        <header class="account-page-heading">
+            <div><span class="auth-eyebrow">مساحتك الشخصية</span>
+                <h1>أهلًا بيك في حسابك</h1>
+                <p>من هنا تقدر تتابع طلباتك، تدير عناوين الشحن، وترجع لمنتجاتك المفضلة.</p>
+                <div class="account-email-chip">✉ <span>@Model.Email</span></div>
+            </div>
+            <div class="settings-avatar" aria-hidden="true">♙</div>
+        </header>
+        <div class="account-layout">
+            <nav class="side-nav" aria-label="قائمة الحساب"><a class="active" asp-action="Index">▦ <span>نظرة
+                عامة</span></a><a asp-controller="Wishlist" asp-action="Index">♡ <span>المنتجات
+                المفضلة</span></a><a asp-controller="Cart" asp-action="Index">▱ <span>سلة المشتريات</span></a><a
+                asp-action="Settings">⚙ <span>إعدادات الحساب</span></a><a asp-controller="Store"
+                                                                          asp-action="Index">⌕ <span>متابعة التسوق</span></a></nav>
+                <div>
+                    <section class="panel">
+                        <div class="account-section-heading">
+                            <div>
+                                <h2>ملخص حسابك</h2>
+                                <p>نظرة سريعة على نشاطك في عِدّة.</p>
+                            </div><span class="section-mark">✳</span>
+                        </div>
+                        <div class="stat-grid">
+                            <div class="stat"><span>إجمالي الطلبات</span><strong>@Model.Orders.Count</strong><small>كل
+                                مشترياتك السابقة</small></div>
+                                <div class="stat"><span>طلبات قيد التنفيذ</span><strong>@Model.Orders.Count(x => x.Status is
+                                       "Pending" or "Processing" or "Shipped")</strong><small>طلبات لم تكتمل بعد</small></div>
+                                    <div class="stat"><span>المنتجات
+                                        المفضلة</span><strong>@Model.WishlistCount</strong><small>منتجات حفظتها لوقت
+                                        لاحق</small></div>
+                                    </div>
+                                </section>
+                                <section class="panel">
+                                    <div class="account-section-heading">
+                                        <div>
+                                            <h2>أحدث طلباتك</h2>
+                                            <p>تابع حالة مشترياتك وتفاصيلها.</p>
+                                        </div><a class="account-inline-link" asp-controller="Store" asp-action="Index">اكتشف المنتجات
+                                        ←</a>
+                                    </div>
+                                    @if (!Model.Orders.Any())
+                                    {
+                                        <div class="account-empty-state"><span>▧</span>
+                                            <h3>لسه مفيش طلبات</h3>
+                                            <p>أول ما تعمل طلب، هتقدر تتابع تفاصيله وحالته من هنا.</p><a
+                                            class="account-primary-button account-button-link" asp-controller="Store"
+                                            asp-action="Index">ابدأ التسوق <span aria-hidden="true">←</span></a>
+                                        </div>
+                                    }
+                                    else
+                                    {
+
+                                        <div class="table-wrap">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>رقم الطلب</th>
+                                                        <th>التاريخ</th>
+                                                        <th>الحالة</th>
+                                                        <th>الإجمالي</th>
+                                                        <th>التفاصيل</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>@foreach (var order in Model.Orders) {
+                                                    <tr>
+                                                        <td><strong>@order.OrderNumber</strong></td>
+                                                        <td>@order.PlacedAt?.ToLocalTime().ToString("yyyy/MM/dd")</td>
+                                                        <td><span class="order-status">@(order.Status switch
+                                                            {
+                                                                "Pending" => "قيد الانتظار",
+                                                                "Processing" => "قيد التجهيز",
+                                                                "Shipped" => "تم الشحن",
+                                                                "Delivered" => "تم التسليم",
+                                                                "Cancelled" => "ملغي",
+                                                                _ => order.Status
+                                                            })</span></td>
+                                                            <td><strong>@order.TotalAmount.ToString("N0") ج.م</strong></td>
+                                                            <td><a asp-action="Details" asp-route-id="@order.Id">عرض الطلب ←</a></td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    }
+                                </section>
+                                <section class="panel">
+                                    <div class="account-section-heading">
+                                        <div>
+                                            <h2>عناوين الشحن</h2>
+                                            <p>العناوين المحفوظة لتسهيل استلام مشترياتك.</p>
+                                        </div><span class="section-mark">⌖</span>
+                                    </div>
+                                    @if (Model.Addresses.Any())
+                                    {
+                                        <div class="saved-address-list">@foreach (var address in
+                                            Model.Addresses) {
+                                                <article class="saved-address"><span class="address-pin">⌖</span>
+                                                    <div><strong>@address.FullName</strong>
+                                                        <p>@address.City، @address.StreetAddress</p><small>@address.PhoneNumber</small>
+                                                    </div>
+                                                </article>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+
+                                        <p class="account-muted-copy">لسه مفيش عناوين محفوظة. أضف عنوانك لتسهيل الطلبات القادمة.</p>
+                                    }
+                                    <details class="address-form-disclosure">
+                                        <summary>＋ إضافة عنوان شحن جديد</summary>
+                                        <form asp-action="AddAddress" method="post" class="form-grid"><label>الاسم بالكامل<input
+                                            name="FullName" autocomplete="name" required /></label><label>رقم الهاتف<input
+                                            name="PhoneNumber" type="tel" autocomplete="tel"
+                                            required /></label><label>الدولة<input name="Country"
+                                                                                   value="Egypt" /></label><label>المحافظة<input
+                                            name="StateOrGovernorate" /></label><label>المدينة<input name="City"
+                                                                                                     required /></label><label>العنوان بالتفصيل<input name="StreetAddress"
+                                                                                             required /></label><label class="address-default-check"><input type="checkbox"
+                                                                                                           name="IsDefault" value="true" /> اجعل هذا العنوان افتراضيًا</label><button
+                                            class="account-secondary-button" type="submit">حفظ العنوان</button></form>
+                                        </details>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+                    </section>

@@ -1,0 +1,76 @@
+@model EddaStore.Models.ViewModels.Identity.LoginViewModel
+@{
+    ViewData["Title"] = "تسجيل الدخول"; var googleEnabled = ViewBag.GoogleEnabled is true; ViewData["Robots"] = "noindex, follow";
+}
+<section class="account-page">
+    <div class="container account-wrap">
+        <nav class="account-breadcrumb" aria-label="مسار الصفحة"><a asp-controller="Home"
+                                                                        asp-action="Index">الرئيسية</a><span> / </span><span>تسجيل الدخول</span></nav>
+            <div class="auth-layout">
+                <section class="auth-panel">
+                    <div class="auth-heading"><span class="auth-eyebrow">مرحبًا بعودتك</span>
+                        <h1>سجّل دخولك إلى عِدّة</h1>
+                        <p>كمّل تسوّقك، وتابع طلباتك، وارجع لمنتجاتك المفضلة بسهولة.</p>
+                    </div>
+                    @if (TempData["ErrorMessage"] is string error)
+                    {
+                        <div class="account-alert account-alert-error"
+                             role="alert">@error</div>
+                    }
+                    @if (TempData["SuccessMessage"] is string success)
+                    {
+                        <div class="account-alert account-alert-success"
+                             role="status">@success</div>
+                    }
+                    @if (TempData["Success"] is string successMessage)
+                    {
+                        <div class="account-alert account-alert-success"
+                             role="status">@successMessage</div>
+                    }
+                    @if (googleEnabled)
+                    {
+                        <form asp-action="ExternalLogin" method="post" class="google-auth"><input
+                            type="hidden" name="provider" value="Google" /><input type="hidden" name="returnUrl"
+                                                                                  value="@Model.ReturnUrl" /><button class="auth-google-button" type="submit"><span
+                            class="google-g">G</span> المتابعة باستخدام Google</button></form>
+                            <div class="auth-divider"><span>أو باستخدام البريد الإلكتروني</span></div>
+                        }
+                        <form asp-action="Login" method="post" class="account-form"><input asp-for="ReturnUrl" type="hidden" />
+                            <div asp-validation-summary="ModelOnly" class="account-validation-summary"></div>
+                            <div class="form-field"><label asp-for="Email"></label><input asp-for="Email" class="account-input"
+                                                                                              type="email" autocomplete="email" placeholder="name@example.com" /><span
+                                asp-validation-for="Email" class="account-field-error"></span></div>
+                                <div class="form-field"><label asp-for="Password"></label><input asp-for="Password"
+                                                                                                     class="account-input" autocomplete="current-password" placeholder="اكتب كلمة المرور" /><span
+                                    asp-validation-for="Password" class="account-field-error"></span></div>
+                                    <div class="auth-options"><label class="auth-remember"><input asp-for="RememberMe" /> <span>تذكرني
+                                        على هذا الجهاز</span></label><a asp-action="ForgotPassword">نسيت كلمة المرور؟</a></div>
+                                        <button class="account-primary-button" type="submit">تسجيل الدخول <span
+                                            aria-hidden="true">←</span></button>
+                                        </form>
+                                        <p class="auth-switch">لسه معندكش حساب؟ <a asp-action="Register">أنشئ حساب جديد</a></p>
+                                        <div class="auth-security-note"><span aria-hidden="true">✓</span> بياناتك وحسابك في أمان مع عِدّة.</div>
+                                    </section>
+                                    <aside class="auth-showcase auth-showcase-login">
+                                        <div class="showcase-topline"><span class="showcase-logo">عِدّة</span><span class="showcase-en">EDDA
+                                            STORE</span></div>
+                                            <div class="showcase-copy"><span class="showcase-pill"><i></i> تجربة شراء أسهل</span>
+                                                <h2>كل احتياجاتك التقنية،<br /><em>في مكان واحد.</em></h2>
+                                                <p>تابع مشترياتك، واحفظ عناوينك، وخلي تجربة التسوق أبسط من أول مرة.</p>
+                                                <div class="showcase-features">
+                                                    <div><span class="feature-icon">01</span><span><b>طلباتي</b><small>تابع حالة
+                                                        مشترياتك</small></span></div>
+                                                        <div><span class="feature-icon">02</span><span><b>قائمتك المفضلة</b><small>ارجع للي عجبك
+                                                            بسرعة</small></span></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="showcase-orbit orbit-one"></div>
+                                                    <div class="showcase-orbit orbit-two"></div>
+                                                    <div class="showcase-bottom">تقنيتك تبدأ من هنا <span>✳</span></div>
+                                                </aside>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    @section Scripts {
+                                        <partial name="_ValidationScriptsPartial" />
+                                    }

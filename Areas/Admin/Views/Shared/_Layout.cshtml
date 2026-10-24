@@ -4,34 +4,103 @@
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var adminName = User.Identity?.Name ?? "مدير النظام";
 }
+
 <head>
-    <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#26372D" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#26372D" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="description" content="لوحة إدارة متجر عِدّة." />
     <title>@(ViewData["Title"] is string title ? $"{title} | عِدّة EDDA Admin" : "لوحة التحكم | عِدّة")</title>
     <link rel="icon" href="~/assets/brand-mark.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
 </head>
+
 <body class="admin-prototype-body">
     <div class="mobile-overlay" id="admin-sidebar-overlay"></div>
     <div class="app">
         <aside class="sidebar" id="admin-sidebar" aria-label="التنقل الإداري">
-            <a class="brand" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><img src="~/assets/brand-mark.svg" alt="EddaStore" /><span><strong>عِدّة EDDA</strong><small>لوحة إدارة المتجر</small></span></a>
-            <nav>
-                <div class="nav-label">الرئيسية</div><div class="nav"><a class="@(currentController == "Dashboard" ? "active" : "")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><span class="ico">▦</span>لوحة التحكم</a><a class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Notifications" ? "active" : "")" asp-area="Admin" asp-controller="Tools" asp-action="Notifications"><span class="ico">♧</span>الإشعارات</a></div>
-                <div class="nav-label">إدارة المتجر</div><div class="nav"><a class="@(currentController == "Products" ? "active" : "")" asp-area="Admin" asp-controller="Products" asp-action="Index"><span class="ico">▣</span>المنتجات</a><a class="@(currentController == "Categories" ? "active" : "")" asp-area="Admin" asp-controller="Categories" asp-action="Index"><span class="ico">▤</span>الأقسام</a><a class="@(currentController == "Brands" ? "active" : "")" asp-area="Admin" asp-controller="Brands" asp-action="Index"><span class="ico">◇</span>العلامات التجارية</a><a class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Inventory" ? "active" : "")" asp-area="Admin" asp-controller="Tools" asp-action="Inventory"><span class="ico">▥</span>المخزون</a></div>
-                <div class="nav-label">المبيعات</div><div class="nav"><a class="@(currentController == "Orders" ? "active" : "")" asp-area="Admin" asp-controller="Orders" asp-action="Index"><span class="ico">▧</span>الطلبات</a><a class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Customers" ? "active" : "")" asp-area="Admin" asp-controller="Tools" asp-action="Customers"><span class="ico">♙</span>العملاء</a><a class="@(currentController == "Reviews" ? "active" : "")" asp-area="Admin" asp-controller="Reviews" asp-action="Index"><span class="ico">☆</span>التقييمات</a></div>
-                <div class="nav-label">التسويق والتقارير</div><div class="nav"><a class="@(currentController == "Coupons" ? "active" : "")" asp-area="Admin" asp-controller="Coupons" asp-action="Index"><span class="ico">％</span>الكوبونات</a><a class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Reports" ? "active" : "")" asp-area="Admin" asp-controller="Tools" asp-action="Reports"><span class="ico">▥</span>التقارير</a><a class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Search" ? "active" : "")" asp-area="Admin" asp-controller="Tools" asp-action="Search"><span class="ico">⌕</span>بحث</a></div>
-                <div class="nav-label">النظام</div><div class="nav"><a class="@(currentController == "Users" ? "active" : "")" asp-area="Admin" asp-controller="Users" asp-action="Index"><span class="ico">♟</span>المستخدمون</a><a class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Roles" ? "active" : "")" asp-area="Admin" asp-controller="Tools" asp-action="Roles"><span class="ico">⚿</span>الأدوار والصلاحيات</a><a class="@(currentController == "RecycleBin" ? "active" : "")" asp-area="Admin" asp-controller="RecycleBin" asp-action="Index"><span class="ico">▱</span>سلة المحذوفات</a><a class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Settings" ? "active" : "")" asp-area="Admin" asp-controller="Tools" asp-action="Settings"><span class="ico">⚙</span>الإعدادات</a></div>
-            </nav>
-            <div class="sidebar-foot"><b>مساحة الإدارة</b>إدارة بيانات EddaStore من مكان واحد.</div>
-        </aside>
-        <main class="main"><header class="topbar"><div class="top-right"><button type="button" class="mobile-toggle" id="admin-menu-toggle" aria-label="فتح القائمة" aria-expanded="false">☰</button><div class="admin-context"><span>عِدّة / لوحة الإدارة</span><b>@(ViewData["Heading"] ?? ViewData["Title"] ?? "لوحة التحكم")</b></div></div><div class="top-left"><a class="icon-btn" asp-area="" asp-controller="Home" asp-action="Index" title="عرض المتجر" aria-label="عرض المتجر">↗</a><span class="user"><span class="avatar">@adminName[0]</span><span class="user-text"><b>@adminName</b><small>Administrator</small></span></span></div></header>
-            <div class="content">@if (TempData["Success"] is string successMessage) { <div class="admin-alert admin-alert-success" role="status">@successMessage</div> }@if (TempData["Error"] is string errorMessage) { <div class="admin-alert admin-alert-error" role="alert">@errorMessage</div> }@RenderBody()</div>
-            <footer class="footer">© @DateTime.Now.Year عِدّة EDDA · لوحة إدارة المتجر</footer>
-        </main>
-    </div>
-    <script>(() => { const t=document.getElementById('admin-menu-toggle'),s=document.getElementById('admin-sidebar'),o=document.getElementById('admin-sidebar-overlay'); if(!t||!s||!o)return; const c=()=>{s.classList.remove('open');o.classList.remove('show');t.setAttribute('aria-expanded','false')};t.addEventListener('click',()=>{const open=s.classList.toggle('open');o.classList.toggle('show',open);t.setAttribute('aria-expanded',String(open))});o.addEventListener('click',c);document.addEventListener('keydown',e=>{if(e.key==='Escape')c()});})();</script>
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
+            <a class="brand" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><img
+                src="~/assets/brand-mark.svg" alt="EddaStore" /><span><strong>عِدّة EDDA</strong><small>لوحة إدارة
+                المتجر</small></span></a>
+                <nav>
+                    <div class="nav-label">الرئيسية</div>
+                    <div class="nav"><a class="@(currentController == "Dashboard" ? "active" : "")" asp-area="Admin"
+                                            asp-controller="Dashboard" asp-action="Index"><span class="ico">▦</span>لوحة التحكم</a><a
+                        class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Notifications" ? "active" : "")"
+                        asp-area="Admin" asp-controller="Tools" asp-action="Notifications"><span
+                        class="ico">♧</span>الإشعارات</a></div>
+                        <div class="nav-label">إدارة المتجر</div>
+                        <div class="nav"><a class="@(currentController == "Products" ? "active" : "")" asp-area="Admin"
+                                                asp-controller="Products" asp-action="Index"><span class="ico">▣</span>المنتجات</a><a
+                            class="@(currentController == "Categories" ? "active" : "")" asp-area="Admin"
+                            asp-controller="Categories" asp-action="Index"><span class="ico">▤</span>الأقسام</a><a
+                            class="@(currentController == "Brands" ? "active" : "")" asp-area="Admin"
+                            asp-controller="Brands" asp-action="Index"><span class="ico">◇</span>العلامات التجارية</a><a
+                            class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Inventory" ? "active" : "")"
+                            asp-area="Admin" asp-controller="Tools" asp-action="Inventory"><span
+                            class="ico">▥</span>المخزون</a></div>
+                            <div class="nav-label">المبيعات</div>
+                            <div class="nav"><a class="@(currentController == "Orders" ? "active" : "")" asp-area="Admin"
+                                                    asp-controller="Orders" asp-action="Index"><span class="ico">▧</span>الطلبات</a><a
+                                class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Customers" ? "active" : "")"
+                                asp-area="Admin" asp-controller="Tools" asp-action="Customers"><span
+                                class="ico">♙</span>العملاء</a><a class="@(currentController == "Reviews" ? "active" : "")"
+                                                              asp-area="Admin" asp-controller="Reviews" asp-action="Index"><span
+                                class="ico">☆</span>التقييمات</a></div>
+                                <div class="nav-label">التسويق والتقارير</div>
+                                <div class="nav"><a class="@(currentController == "Coupons" ? "active" : "")" asp-area="Admin"
+                                                        asp-controller="Coupons" asp-action="Index"><span class="ico">％</span>الكوبونات</a><a
+                                    class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Reports" ? "active" : "")"
+                                    asp-area="Admin" asp-controller="Tools" asp-action="Reports"><span
+                                    class="ico">▥</span>التقارير</a><a
+                                    class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Search" ? "active" : "")"
+                                    asp-area="Admin" asp-controller="Tools" asp-action="Search"><span class="ico">⌕</span>بحث</a>
+                                </div>
+                                <div class="nav-label">النظام</div>
+                                <div class="nav"><a class="@(currentController == "Users" ? "active" : "")" asp-area="Admin"
+                                                        asp-controller="Users" asp-action="Index"><span class="ico">♟</span>المستخدمون</a><a
+                                    class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Roles" ? "active" : "")"
+                                    asp-area="Admin" asp-controller="Tools" asp-action="Roles"><span class="ico">⚿</span>الأدوار
+                                    والصلاحيات</a><a class="@(currentController == "RecycleBin" ? "active" : "")" asp-area="Admin"
+                                                     asp-controller="RecycleBin" asp-action="Index"><span class="ico">▱</span>سلة المحذوفات</a><a
+                                    class="@(currentController == "Tools" && ViewContext.RouteData.Values["action"]?.ToString() == "Settings" ? "active" : "")"
+                                    asp-area="Admin" asp-controller="Tools" asp-action="Settings"><span
+                                    class="ico">⚙</span>الإعدادات</a></div>
+                                </nav>
+                                <div class="sidebar-foot"><b>مساحة الإدارة</b>إدارة المنتجات والطلبات وبيانات المتجر من مكان واحد.</div>
+                            </aside>
+                            <main class="main">
+                                <header class="topbar">
+                                    <div class="top-right"><button type="button" class="mobile-toggle" id="admin-menu-toggle"
+                                                                       aria-label="فتح القائمة" aria-expanded="false">☰</button>
+                                        <div class="admin-context"><span>عِدّة / لوحة الإدارة</span><b>@(ViewData["Heading"] ??
+                                                                        ViewData["Title"] ?? "لوحة التحكم")</b></div>
+                                        </div>
+                                        <div class="top-left"><a class="icon-btn" asp-area="" asp-controller="Home" asp-action="Index"
+                                                                     title="عرض المتجر" aria-label="عرض المتجر">↗</a><span class="user"><span
+                                            class="avatar">@adminName[0]</span><span class="user-text"><b>@adminName</b><small>مسؤول
+                                            المتجر</small></span></span></div>
+                                        </header>
+                                        <div class="content">@if (TempData["Success"] is string successMessage) {
+                                            <div
+                                            class="admin-alert admin-alert-success" role="status">@successMessage</div>
+                                        }
+                                        @if (TempData["Error"]
+                                                        is string errorMessage)
+                                        {
+                                            <div class="admin-alert admin-alert-error" role="alert">@errorMessage</div>
+                                        }
+                                        @RenderBody()</div>
+                                        <footer class="footer">© @DateTime.Now.Year عِدّة EDDA · لوحة إدارة المتجر</footer>
+                                    </main>
+                                </div>
+                                <script>(() => { const t = document.getElementById('admin-menu-toggle'), s = document.getElementById('admin-sidebar'), o = document.getElementById('admin-sidebar-overlay'); if (!t || !s || !o) return; const c = () => { s.classList.remove('open'); o.classList.remove('show'); t.setAttribute('aria-expanded', 'false') }; t.addEventListener('click', () => { const open = s.classList.toggle('open'); o.classList.toggle('show', open); t.setAttribute('aria-expanded', String(open)) }); o.addEventListener('click', c); document.addEventListener('keydown', e => { if (e.key === 'Escape') c() }); })();</script>
+                                @await RenderSectionAsync("Scripts", required: false)
+                            </body>
+
+                        </html>

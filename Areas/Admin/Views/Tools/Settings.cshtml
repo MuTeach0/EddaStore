@@ -1,2 +1,16 @@
-@{ ViewData["Title"]="الإعدادات"; ViewData["Heading"]="الإعدادات"; }
-<div class="page-head"><div><div class="eyebrow">عِدّة / النظام</div><h1>إعدادات المتجر</h1><p>إعدادات النظام الحساسة تُدار عبر ملف الإعدادات والبيئة الآمنة.</p></div></div><section class="panel"><div class="notice">لا توجد إعدادات متجر قابلة للحفظ في قاعدة البيانات حاليًا؛ لذلك لا يظهر نموذج تجريبي قد يوهم بحفظ تغييرات غير فعلية.</div><div class="kv"><span>قاعدة البيانات</span><b>مُدارة من إعدادات التطبيق</b></div><div class="kv"><span>تسجيل الدخول</span><b>ASP.NET Core Identity</b></div><div class="kv"><span>صلاحية الإدارة</span><b>Role: Admin</b></div></section>
+@{
+    ViewData["Title"] = "إعدادات المتجر"; ViewData["Heading"] = "إعدادات المتجر";
+}
+<div class="page-head">
+    <div>
+        <div class="eyebrow">عِدّة / النظام</div>
+        <h1>إعدادات المتجر</h1>
+        <p>تُدار إعدادات الاتصال والخدمات الحساسة من إعدادات تشغيل التطبيق، ولا يمكن تعديلها من هذه الشاشة.</p>
+    </div>
+</div>
+<section class="panel">
+    <div class="notice">لضمان استقرار المتجر، لا تُعرض بيانات الاتصال الحساسة داخل لوحة الإدارة.</div>
+    <div class="kv"><span>قاعدة البيانات</span><b>تُدار من إعدادات التطبيق</b></div>
+    <div class="kv"><span>إدارة تسجيل الدخول</span><b>نظام حسابات ASP.NET Core Identity</b></div>
+    <div class="kv"><span>الوصول إلى لوحة الإدارة</span><b>للحسابات المصرّح لها فقط</b></div>
+</section>

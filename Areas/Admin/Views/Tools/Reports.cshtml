@@ -1,25 +1,73 @@
 @model EddaStore.Models.ViewModels.Admin.Reports.SalesReportViewModel
-@{ ViewData["Title"] = "التقارير والتحليلات"; ViewData["Heading"] = "التقارير والتحليلات"; var totalOrders = Model.TotalOrders; var cancelled = Model.CancelledOrders; var cancellationRate = totalOrders == 0 ? 0 : cancelled * 100m / totalOrders; }
-<div class="page-head"><div><div class="eyebrow">عِدّة / لوحة الإدارة</div><h1>التقارير والتحليلات</h1><p>تابع مؤشرات الأداء واتجاهات المبيعات من البيانات المسجلة.</p></div></div>
+@{
+    ViewData["Title"] = "التقارير والتحليلات"; ViewData["Heading"] = "التقارير والتحليلات"; var totalOrders =
+    Model.TotalOrders; var cancelled = Model.CancelledOrders; var cancellationRate = totalOrders == 0 ? 0 : cancelled * 100m
+    / totalOrders;
+}
+<div class="page-head">
+    <div>
+        <div class="eyebrow">عِدّة / لوحة الإدارة</div>
+        <h1>التقارير والتحليلات</h1>
+        <p>تابع مؤشرات الأداء واتجاهات المبيعات من البيانات المسجلة.</p>
+    </div>
+</div>
 <form method="get" class="filters" style="margin-bottom:16px;">
     <label>من <input type="date" name="from" value="@Model.From.ToString("yyyy-MM-dd")" /></label>
     <label>إلى <input type="date" name="to" value="@Model.To.ToString("yyyy-MM-dd")" /></label>
     <button class="btn" type="submit">تطبيق</button>
 </form>
-<div class="grid stats"><div class="stat"><div class="stat-top"><span>إجمالي المبيعات</span><span class="stat-icon">▥</span></div><strong>@Model.TotalRevenue.ToString("N0") ج.م</strong><div class="trend">الطلبات المُسلَّمة</div></div><div class="stat"><div class="stat-top"><span>إجمالي الطلبات</span><span class="stat-icon">▧</span></div><strong>@totalOrders</strong><div class="trend">طلبات مسجلة</div></div><div class="stat"><div class="stat-top"><span>العملاء</span><span class="stat-icon">♙</span></div><strong>@Model.Customers</strong><div class="trend">حسابات مسجلة</div></div><div class="stat"><div class="stat-top"><span>معدل الإلغاء</span><span class="stat-icon">↺</span></div><strong>@cancellationRate.ToString("N1")%</strong><div class="trend">@cancelled طلب ملغي</div></div></div>
+<div class="grid stats">
+    <div class="stat">
+        <div class="stat-top"><span>إجمالي المبيعات</span><span class="stat-icon">▥</span></div>
+        <strong>@Model.TotalRevenue.ToString("N0") ج.م</strong>
+        <div class="trend">الطلبات المُسلَّمة</div>
+    </div>
+    <div class="stat">
+        <div class="stat-top"><span>إجمالي الطلبات</span><span class="stat-icon">▧</span></div>
+        <strong>@totalOrders</strong>
+        <div class="trend">طلبات مسجلة</div>
+    </div>
+    <div class="stat">
+        <div class="stat-top"><span>العملاء</span><span class="stat-icon">♙</span></div>
+        <strong>@Model.Customers</strong>
+        <div class="trend">حسابات مسجلة</div>
+    </div>
+    <div class="stat">
+        <div class="stat-top"><span>معدل الإلغاء</span><span class="stat-icon">↺</span></div>
+        <strong>@cancellationRate.ToString("N1")%</strong>
+        <div class="trend">@cancelled طلب ملغي</div>
+    </div>
+</div>
 <section class="panel">
-    <div class="panel-head"><div><h2>أكثر المنتجات مبيعًا</h2><p>بناءً على الطلبات المُسلَّمة within selected period.</p></div></div>
+    <div class="panel-head">
+        <div>
+            <h2>أكثر المنتجات مبيعًا</h2>
+            <p>بناءً على الطلبات المُسلَّمة خلال الفترة المحددة.</p>
+        </div>
+    </div>
     <div class="table-wrap">
         <table>
-            <thead><tr><th>المنتج</th><th>الكمية</th><th>الإيراد</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>المنتج</th>
+                    <th>الكمية</th>
+                    <th>الإيراد</th>
+                </tr>
+            </thead>
             <tbody>
                 @foreach (var p in Model.TopProducts)
                 {
-                    <tr><td>@p.Name</td><td>@p.Quantity</td><td>@p.Revenue.ToString("N0") ج.م</td></tr>
+                    <tr>
+                        <td>@p.Name</td>
+                        <td>@p.Quantity</td>
+                        <td>@p.Revenue.ToString("N0") ج.م</td>
+                    </tr>
                 }
                 @if (!Model.TopProducts.Any())
                 {
-                    <tr><td colspan="3" class="empty">لا توجد بيانات مبيعات.</td></tr>
+                    <tr>
+                        <td colspan="3" class="empty">لا توجد بيانات مبيعات.</td>
+                    </tr>
                 }
             </tbody>
         </table>

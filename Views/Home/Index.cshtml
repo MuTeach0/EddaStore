@@ -1,12 +1,170 @@
 @model EddaStore.Models.ViewModels.HomeViewModel
-@{ ViewData["Title"] = "الرئيسية"; }
+@{
+    ViewData["Title"] = "متجر الكمبيوتر واللابتوب والإكسسوارات"; ViewData["MetaDescription"] = "تسوّق أجهزة الكمبيوتر واللابتوب وإكسسوارات التقنية من عِدّة. قارن تفاصيل المنتجات وأسعارها وتواصل معنا للاستفسار قبل الشراء.";
+}
+@{
+    var heroProducts = Model.FeaturedProducts
+        .Where(product => product.Images.Any(productImage => !string.IsNullOrWhiteSpace(productImage.ImageUrl)))
+        .ToList();
+}
 <div class="container">
-    <section class="hero"><div class="hero-copy"><span class="eyebrow">عِدّة — تقنيتك تبدأ من هنا</span><h1>كل اللي تحتاجه<br />لعالمك التقني.</h1><p>من اللابتوب اللي ينجز شغلك، لحد الإكسسوارات اللي تكمّل تجربتك. اختار بثقة وخلّي التقنية أقرب ليك.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-primary" asp-controller="Store" asp-action="Index">اكتشف المنتجات ←</a><a class="btn btn-outline" asp-controller="Store" asp-action="Index">تصفح الأقسام</a></div></div><div class="hero-image" role="img" aria-label="أجهزة تقنية من عِدّة"></div></section>
-    <section class="section"><div class="section-head"><div><span class="eyebrow">تصفّح بسهولة</span><h2>تسوّق حسب التصنيف</h2><p>كل ما تحتاجه في مكان واحد.</p></div><a class="text-link" asp-controller="Store" asp-action="Index">عرض الكل ←</a></div>
-        @if (Model.Categories.Count > 0) { <div class="categories">@foreach (var category in Model.Categories) { <a class="category-card" asp-controller="Store" asp-action="Index" asp-route-category="@category.Slug"><span class="category-icon">✦</span><span><strong>@category.Name</strong><small>اكتشف المنتجات</small></span></a> }</div> }
+    <section class="hero" aria-labelledby="home-hero-title">
+        <div class="hero-copy">
+            <span class="eyebrow">عِدّة — تقنيتك تبدأ من هنا</span>
+            <h1 id="home-hero-title">اختيارات تقنية<br />تناسب احتياجك.</h1>
+            <p>تصفّح أجهزة الكمبيوتر واللابتوب والإكسسوارات، وقارن المواصفات والأسعار قبل ما تختار المنتج المناسب ليك.
+            </p>
+            <div class="hero-actions">
+                <a class="btn btn-primary" asp-controller="Store" asp-action="Index">تصفّح المنتجات <span
+                    aria-hidden="true">←</span></a>
+                    <a class="btn btn-outline" asp-controller="Home" asp-action="Contact">اسألنا عن منتج</a>
+                </div>
+            </div>
+            <div class="hero-image hero-product-carousel" data-hero-carousel aria-label="منتجات مميزة من عِدّة">
+                @if (heroProducts.Count > 0)
+                {
+                    var slideIndex = 0;
+                    foreach (var heroProduct in heroProducts)
+                    {
+                        var heroImage = heroProduct.Images.FirstOrDefault(productImage =>
+                !string.IsNullOrWhiteSpace(productImage.ImageUrl));
+                        <a class="hero-product-slide @(slideIndex == 0 ? "is-active" : string.Empty)"
+                           href="@Url.Action("Details", "Store", new { slug = heroProduct.Slug })"
+                           aria-label="عرض تفاصيل @heroProduct.Name" aria-hidden="@(slideIndex == 0 ? "false" : "true")"
+                           tabindex="@(slideIndex == 0 ? "0" : "-1")">
+                            <img src="@heroImage!.ImageUrl" alt="@(heroImage.AltText ?? heroProduct.Name)"
+                                 loading="@(slideIndex == 0 ? "eager" : "lazy")" />
+                            <span class="hero-product-caption">
+                                <span class="hero-product-name">@heroProduct.Name</span>
+                                <span class="hero-product-price">@heroProduct.Price.ToString("N0") ج.م</span>
+                            </span>
+                        </a>
+                        slideIndex++;
+                    }
+                    @if (heroProducts.Count > 1)
+                    {
+                        <div class="hero-carousel-controls">
+                            <button type="button" class="hero-carousel-arrow" data-hero-prev
+                                    aria-label="المنتج السابق">&#8594;</button>
+                            <div class="hero-carousel-dots" aria-label="اختيار المنتج">
+                                @for (var dotIndex = 0; dotIndex < heroProducts.Count; dotIndex++)
+                                {
+                                    <button type="button" class="hero-carousel-dot @(dotIndex == 0 ? "is-active" : string.Empty)"
+                                            data-hero-dot="@dotIndex" aria-label="عرض المنتج رقم @(dotIndex + 1)"
+                                            aria-pressed="@(dotIndex == 0 ? "true" : "false")"></button>
+                                }
+                            </div>
+                            <button type="button" class="hero-carousel-arrow" data-hero-next
+                                    aria-label="المنتج التالي">&#8592;</button>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="hero-product-empty" aria-hidden="true">
+                        <svg viewBox="0 0 240 180" role="presentation">
+                            <rect x="36" y="24" width="168" height="108" rx="10" fill="none" stroke="currentColor"
+                                  stroke-width="7" />
+                            <path d="M20 146h200l-15 12H35z" fill="currentColor" />
+                            <path d="M91 48h58M91 65h58M91 82h35" stroke="#C5A56A" stroke-width="7" stroke-linecap="round" />
+                        </svg>
+                        <span>منتجات عِدّة</span>
+                    </div>
+                }
+            </div>
+        </section>
+        <section class="section">
+            <div class="section-head">
+                <div><span class="eyebrow">تصفّح بسهولة</span>
+                    <h2>تسوّق حسب التصنيف</h2>
+                    <p>كل ما تحتاجه في مكان واحد.</p>
+                </div><a class="text-link" asp-controller="Store" asp-action="Index">عرض الكل ←</a>
+            </div>
+            @if (Model.Categories.Count > 0)
+            {
+                <div class="categories">@foreach (var category in Model.Categories) {
+                    <a
+                        class="category-card" asp-controller="Store" asp-action="Index"
+                        asp-route-category="@category.Slug"><span
+                        class="category-icon">✦</span><span><strong>@category.Name</strong><small>اكتشف
+                        المنتجات</small></span></a>
+                    }
+                </div>
+            }
+        </section>
+        <section class="section">
+            <div class="section-head">
+                <div><span class="eyebrow">اختياراتنا ليك</span>
+                    <h2>منتجات تستحق التجربة</h2>
+                    <p>منتجات متاحة ومختارة بعناية.</p>
+                </div><a class="text-link" asp-controller="Store" asp-action="Index">كل المنتجات ←</a>
+            </div>
+            @if (Model.FeaturedProducts.Count > 0)
+            {
+                <div class="product-grid">@foreach (var product in
+                    Model.FeaturedProducts) {
+                        var image = product.Images.FirstOrDefault();
+                        <article class="product-card"><a
+                            class="product-photo" asp-controller="Store" asp-action="Details" asp-route-slug="@product.Slug">@if
+                            (!string.IsNullOrWhiteSpace(image?.ImageUrl)) {
+                                <img src="@image.ImageUrl"
+                                     alt="@(image?.AltText ?? product.Name)" loading="lazy" />
+                            } else
+                            {
+
+                                <span
+                                class="image-fallback">لا تتوفر صورة</span>
+                            }
+                        </a>@if (User.Identity?.IsAuthenticated == true) {
+                        <form class="product-favorite-form" asp-controller="Wishlist" asp-action="Add" method="post"><input
+                            type="hidden" name="productId" value="@product.Id" /><input type="hidden" name="returnUrl"
+                                                                                        value="@Context.Request.Path" /><button class="heart" type="submit"
+                                                                    aria-label="أضف @product.Name إلى المفضلة">♡</button></form>
+                        } else
+                        {
+
+                            <a class="heart"
+                               asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path"
+                               aria-label="سجّل الدخول لإضافة @product.Name إلى المفضلة">♡</a>
+                        }
+                        <div class="product-info">
+                            <div class="product-brand">@product.Brand?.Name</div><a class="product-title" asp-controller="Store"
+                                                                                    asp-action="Details" asp-route-slug="@product.Slug">@product.Name</a>
+                            <div class="price-row"><span class="price">@product.Price.ToString("N0")
+                                ج.م</span>@if(product.CompareAtPrice > product.Price){
+                                <span
+                                class="old-price">@product.CompareAtPrice?.ToString("N0") ج.م</span>
+                            }
+                        </div>
+                        <div class="product-bottom"><a class="btn btn-primary" asp-controller="Store" asp-action="Details"
+                                                           asp-route-slug="@product.Slug">عرض التفاصيل</a></div>
+                        </div>
+                    </article>
+                }
+            </div>
+        } else
+        {
+
+            <div class="empty">
+                <div class="empty-icon">⌁</div>
+                <h2>لا توجد منتجات متاحة حاليًا</h2>
+                <p>تصفّح المنتجات المتاحة أو تواصل معنا لو بتدور على منتج معين.</p><a class="btn btn-primary"
+                                                                                      asp-controller="Store" asp-action="Index">تصفّح المنتجات</a>
+            </div>
+        }
     </section>
-    <section class="section"><div class="section-head"><div><span class="eyebrow">اختياراتنا ليك</span><h2>منتجات تستحق التجربة</h2><p>منتجات متاحة ومختارة بعناية.</p></div><a class="text-link" asp-controller="Store" asp-action="Index">كل المنتجات ←</a></div>
-        @if (Model.FeaturedProducts.Count > 0) { <div class="product-grid">@foreach (var product in Model.FeaturedProducts) { var image = product.Images.FirstOrDefault(); <article class="product-card"><a class="product-photo" asp-controller="Store" asp-action="Details" asp-route-slug="@product.Slug">@if (!string.IsNullOrWhiteSpace(image?.ImageUrl)) { <img src="@image.ImageUrl" alt="@(image?.AltText ?? product.Name)" loading="lazy" /> } else { <span class="tag">قريبًا</span> }</a><button class="heart" type="button" aria-label="أضف للمفضلة">♡</button><div class="product-info"><div class="product-brand">@product.Brand?.Name</div><a class="product-title" asp-controller="Store" asp-action="Details" asp-route-slug="@product.Slug">@product.Name</a><div class="rating">★ منتج مختار</div><div class="price-row"><span class="price">@product.Price.ToString("N0") ج.م</span>@if(product.CompareAtPrice > product.Price){<span class="old-price">@product.CompareAtPrice?.ToString("N0") ج.م</span>}</div><div class="product-bottom"><a class="btn btn-primary" asp-controller="Store" asp-action="Details" asp-route-slug="@product.Slug">أضف للسلة</a><a class="btn btn-outline" asp-controller="Store" asp-action="Details" asp-route-slug="@product.Slug">التفاصيل</a></div></div></article> }</div> } else { <div class="empty"><div class="empty-icon">⌁</div><h2>لا توجد منتجات متاحة</h2><p>أضف منتجات نشطة لتظهر هنا.</p></div> }
+    <section class="trust-row">
+        <div class="trust-item"><span aria-hidden="true">01</span>
+            <div><strong>مواصفات واضحة</strong><small>راجع تفاصيل المنتج قبل الشراء</small></div>
+        </div>
+        <div class="trust-item"><span aria-hidden="true">02</span>
+            <div><strong>أسعار ظاهرة</strong><small>السعر موضح في صفحة المنتج</small></div>
+        </div>
+        <div class="trust-item"><span aria-hidden="true">03</span>
+            <div><strong>تواصل مباشر</strong><small>اسألنا عن المنتج قبل الطلب</small></div>
+        </div>
+        <div class="trust-item"><span aria-hidden="true">04</span>
+            <div><strong>حسابك وطلباتك</strong><small>تابع الطلبات من حسابك</small></div>
+        </div>
     </section>
-    <section class="trust-row"><div class="trust-item"><span>🚚</span><div><strong>شحن سريع</strong><small>توصيل آمن وسهل</small></div></div><div class="trust-item"><span>✓</span><div><strong>اختيار واضح</strong><small>تفاصيل تساعدك تقرر</small></div></div><div class="trust-item"><span>↺</span><div><strong>تجربة مرنة</strong><small>تسوّق براحتك</small></div></div><div class="trust-item"><span>🔒</span><div><strong>تسوّق بثقة</strong><small>بياناتك في أمان</small></div></div></section>
 </div>

@@ -1,9 +1,20 @@
-@{ ViewData["Title"] = "تواصل معنا"; }
-<section class="page-head"><div class="container"><div class="breadcrumbs"><a asp-controller="Home" asp-action="Index">الرئيسية</a> / تواصل معنا</div><h1>تواصل معنا</h1><p>نحن هنا لمساعدتك في أي استفسار حول المنتجات والطلبات.</p></div></section>
-<div class="container section">
-    <section class="panel">
-        <p>البريد الإلكتروني: support@eddastore.local</p>
-        <p>ساعات العمل: الأحد – الخميس، 10 ص إلى 10 م</p>
-        <p>للاستفسارات حول طلب، يرجى تضمين رقم الطلب.</p>
+@{
+    ViewData["Title"] = "تواصل معنا"; ViewData["MetaDescription"] = "تواصل مع عِدّة عبر واتساب للاستفسار عن أجهزة الكمبيوتر واللابتوب والإكسسوارات والطلبات.";
+}
+<section class="page-head">
+    <div class="container">
+        <nav class="breadcrumbs" aria-label="مسار الصفحة"><a asp-controller="Home" asp-action="Index">الرئيسية</a><span
+            aria-hidden="true"> / </span><span>تواصل معنا</span></nav>
+            <h1>تواصل معنا</h1>
+            <p>عندك سؤال عن منتج أو طلب؟ ابعتلنا رسالة على واتساب.</p>
+        </div>
     </section>
-</div>
+    <div class="container section contact-page">
+        <section class="panel contact-card"><span class="contact-kicker">خدمة العملاء</span>
+            <h2>إحنا معاك</h2>
+            <p>شاركنا اسم المنتج أو رقم الطلب، واكتب استفسارك في رسالة واضحة علشان نقدر نساعدك.</p>
+            <div class="contact-number" dir="ltr">01002270587</div><a class="btn btn-primary"
+                                                                  href="https://wa.me/201002270587" target="_blank" rel="noopener noreferrer">ابدأ محادثة واتساب <span
+            aria-hidden="true">↗</span></a><small>يفتح الرابط محادثة واتساب على الرقم الموضح.</small>
+        </section>
+    </div>

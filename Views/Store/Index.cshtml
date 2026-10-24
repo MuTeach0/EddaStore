@@ -1,6 +1,101 @@
 @model EddaStore.Models.ViewModels.Store.StoreIndexViewModel
-@{ ViewData["Title"] = "كل المنتجات"; }
-<section class="page-head"><div class="container"><div class="breadcrumbs"><a asp-controller="Home" asp-action="Index">الرئيسية</a> / المنتجات</div><h1>كل المنتجات</h1><p>اختار المنتج المناسب ليك من مجموعتنا.</p></div></section>
-<div class="container section"><div class="catalog-layout"><aside class="filters"><h3>تصفية النتائج</h3><form asp-action="Index" method="get"><div class="filter-group"><strong>التصنيف</strong>@foreach(var category in Model.Categories){<label><input type="radio" name="category" value="@category.Slug" checked="@(category.Slug == Model.Category)"/> @category.Name</label>}</div><div class="filter-group"><strong>الماركة</strong>@foreach(var brand in Model.Brands){<label><input type="radio" name="brand" value="@brand.Slug" checked="@(brand.Slug == Model.Brand)"/> @brand.Name</label>}</div><input type="hidden" name="q" value="@Model.Query"/><button class="btn btn-primary btn-block" type="submit">تطبيق التصفية</button></form></aside><div><div class="toolbar"><strong>عرض @Model.TotalCount منتج</strong><form asp-action="Index" method="get"><input type="hidden" name="q" value="@Model.Query"/><select name="sort" onchange="this.form.submit()"><option value="newest">الأحدث</option><option value="price_asc">السعر: الأقل أولًا</option><option value="price_desc">السعر: الأعلى أولًا</option><option value="name">الاسم</option></select></form></div>
-@if(Model.Products.Count > 0){<div class="product-grid">@foreach(var product in Model.Products){var image=product.Images.OrderByDescending(i=>i.IsPrimary).ThenBy(i=>i.SortOrder).FirstOrDefault();<article class="product-card"><a class="product-photo" asp-action="Details" asp-route-slug="@product.Slug">@if(!string.IsNullOrWhiteSpace(image?.ImageUrl)){<img src="@image.ImageUrl" alt="@(image?.AltText ?? product.Name)" loading="lazy"/>}<span class="tag">@product.Category.Name</span></a><button class="heart" type="button">♡</button><div class="product-info"><div class="product-brand">@product.Brand.Name</div><a class="product-title" asp-action="Details" asp-route-slug="@product.Slug">@product.Name</a><div class="rating">★ منتج مختار</div><div class="price-row"><span class="price">@product.Price.ToString("N0") ج.م</span>@if(product.CompareAtPrice > product.Price){<span class="old-price">@product.CompareAtPrice?.ToString("N0") ج.م</span>}</div><div class="product-bottom"><a class="btn btn-primary" asp-action="Details" asp-route-slug="@product.Slug">أضف للسلة</a><a class="btn btn-outline" asp-action="Details" asp-route-slug="@product.Slug">التفاصيل</a></div></div></article>}</div>}else{<div class="empty"><div class="empty-icon">⌁</div><h2>ملقيناش منتجات مطابقة</h2><p>جرّب كلمة بحث أو تصفية مختلفة.</p><a class="btn btn-primary" asp-action="Index">عرض كل المنتجات</a></div>}
-</div></div></div>
+@{
+    ViewData["Title"] = "منتجات الكمبيوتر واللابتوب والإكسسوارات"; ViewData["MetaDescription"] = "تصفح منتجات عِدّة من أجهزة الكمبيوتر واللابتوب والإكسسوارات، واستخدم البحث والتصفية لمقارنة الخيارات المتاحة.";
+}
+<section class="page-head">
+    <div class="container">
+        <div class="breadcrumbs"><a asp-controller="Home" asp-action="Index">الرئيسية</a> / المنتجات</div>
+        <h1>كل المنتجات</h1>
+        <p>اختار المنتج المناسب ليك من مجموعتنا.</p>
+    </div>
+</section>
+<div class="container section">
+    <div class="catalog-layout">
+        <aside class="filters">
+            <h3>تصفية النتائج</h3>
+            <form asp-action="Index" method="get">
+                <div class="filter-group"><strong>التصنيف</strong>@foreach(var category in
+                    Model.Categories){
+                        <label><input type="radio" name="category" value="@category.Slug"
+                                          checked="@(category.Slug == Model.Category)" /> @category.Name</label>
+                        }
+                    </div>
+                    <div class="filter-group"><strong>الماركة</strong>@foreach(var brand in Model.Brands){
+                        <label><input
+                            type="radio" name="brand" value="@brand.Slug" checked="@(brand.Slug == Model.Brand)" />
+                            @brand.Name</label>
+                        }
+                    </div><input type="hidden" name="q" value="@Model.Query" /><button
+                    class="btn btn-primary btn-block" type="submit">تطبيق التصفية</button>
+                </form>
+            </aside>
+            <div>
+                <div class="toolbar"><strong>عرض @Model.TotalCount منتج</strong>
+                    <form asp-action="Index" method="get"><input type="hidden" name="q" value="@Model.Query" /><input
+                        type="hidden" name="category" value="@Model.Category" /><input type="hidden" name="brand"
+                                                                                       value="@Model.Brand" /><input type="hidden" name="minPrice" value="@Model.MinPrice" /><input
+                        type="hidden" name="maxPrice" value="@Model.MaxPrice" /><label class="sort-label">ترتيب حسب
+                        <select name="sort" onchange="this.form.submit()">
+                            <option value="newest" selected="@(Model.Sort == "newest")">الأحدث</option>
+                            <option value="price_asc" selected="@(Model.Sort == "price_asc")">السعر: الأقل أولًا
+                            </option>
+                            <option value="price_desc" selected="@(Model.Sort == "price_desc")">السعر: الأعلى أولًا
+                            </option>
+                            <option value="name" selected="@(Model.Sort == "name")">الاسم</option>
+                        </select></label></form>
+                    </div>
+                    @if (Model.Products.Count > 0)
+                    {
+                        <div class="product-grid">@foreach(var product in Model.Products){var
+                            image = product.Images.OrderByDescending(i => i.IsPrimary).ThenBy(i => i.SortOrder).FirstOrDefault();
+                            <article
+                                class="product-card"><a class="product-photo" asp-action="Details"
+                                                    asp-route-slug="@product.Slug">@if(!string.IsNullOrWhiteSpace(image?.ImageUrl)){
+                                <img
+                                src="@image.ImageUrl" alt="@(image?.AltText ?? product.Name)" loading="lazy" />
+                            }else
+                            {
+
+                                <span
+                                class="image-fallback">لا تتوفر صورة</span>
+                            }
+                            <span
+                            class="tag">@product.Category.Name</span></a>@if (User.Identity?.IsAuthenticated == true) {
+                            <form class="product-favorite-form" asp-controller="Wishlist" asp-action="Add" method="post"><input
+                                type="hidden" name="productId" value="@product.Id" /><input type="hidden" name="returnUrl"
+                                                                                            value="@Context.Request.Path" /><button class="heart" type="submit"
+                                                                        aria-label="أضف @product.Name إلى المفضلة">♡</button></form>
+                            } else
+                            {
+
+                                <a class="heart"
+                                   asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path"
+                                   aria-label="سجّل الدخول لإضافة @product.Name إلى المفضلة">♡</a>
+                            }
+                            <div class="product-info">
+                                <div class="product-brand">@product.Brand.Name</div><a class="product-title"
+                                                                                       asp-action="Details" asp-route-slug="@product.Slug">@product.Name</a>
+                                <div class="price-row"><span class="price">@product.Price.ToString("N0")
+                                    ج.م</span>@if(product.CompareAtPrice > product.Price){
+                                    <span
+                                    class="old-price">@product.CompareAtPrice?.ToString("N0") ج.م</span>
+                                }
+                            </div>
+                            <div class="product-bottom"><a class="btn btn-primary" asp-action="Details"
+                                                               asp-route-slug="@product.Slug">عرض التفاصيل</a></div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }else
+            {
+
+                <div class="empty">
+                    <div class="empty-icon">⌁</div>
+                    <h2>ملقيناش منتجات مطابقة</h2>
+                    <p>جرّب كلمة بحث أو تصفية مختلفة.</p><a class="btn btn-primary" asp-action="Index">عرض كل المنتجات</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

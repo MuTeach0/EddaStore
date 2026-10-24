@@ -1,38 +1,17 @@
 @using EddaStore.Models.Identity
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<ApplicationUser> SignInManager
-@inject UserManager<ApplicationUser> UserManager
-
-<ul class="navbar-nav">
+<div class="header-actions" aria-label="إجراءات الحساب">
     @if (SignInManager.IsSignedIn(User))
     {
-        <li class="nav-item">
-            <a class="nav-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="إدارة الحساب">
-                مرحبًا @(User.Identity?.Name ?? "بك")
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <form asp-area="Identity" asp-page="/Account/Logout"
-                  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
-                <button type="submit" class="nav-link btn btn-link">
-                    تسجيل الخروج
-                </button>
-            </form>
-        </li>
+        <a class="header-login-link" asp-controller="Account" asp-action="Index">حسابي</a>
+        <form class="logout-form" asp-controller="Account" asp-action="Logout" method="post">
+            <button type="submit" class="header-login-link header-logout-button">تسجيل الخروج</button>
+        </form>
     }
     else
     {
-        <li class="nav-item">
-            <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">
-                إنشاء حساب
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
-                تسجيل الدخول
-            </a>
-        </li>
+        <a class="header-login-link" asp-controller="Account" asp-action="Register">إنشاء حساب</a>
+        <a class="header-login-link" asp-controller="Account" asp-action="Login">تسجيل الدخول</a>
     }
-</ul>
+</div>

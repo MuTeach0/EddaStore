@@ -1,0 +1,71 @@
+@model EddaStore.Models.ViewModels.Identity.AccountSettingsViewModel
+@{
+    ViewData["Title"] = "إعدادات الحساب"; ViewData["Robots"] = "noindex, follow";
+}
+<section class="account-page account-settings-page">
+    <div class="container account-wrap">
+        <nav class="account-breadcrumb"><a asp-controller="Home" asp-action="Index">الرئيسية</a><span> / </span><a
+            asp-action="Index">حسابي</a><span> / </span><span>الإعدادات</span></nav>
+            <header class="account-page-heading">
+                <div><span class="auth-eyebrow">إدارة حسابك</span>
+                    <h1>إعدادات الحساب</h1>
+                    <p>حدّث بياناتك الشخصية وحافظ على أمان حسابك.</p>
+                </div>
+                <div class="settings-avatar" aria-hidden="true">♙</div>
+            </header>
+            <div class="account-settings-grid">
+                <section class="account-settings-card">
+                    <div class="settings-card-heading"><span class="settings-heading-icon">♙</span>
+                        <div>
+                            <h2>البيانات الشخصية</h2>
+                            <p>تأكد إن بياناتك محدثة باستمرار.</p>
+                        </div>
+                    </div>
+                    <form asp-action="UpdateProfile" method="post" class="account-form">
+                        <div asp-validation-summary="ModelOnly" class="account-validation-summary"></div>
+                        <div class="form-two-columns">
+                            <div class="form-field"><label asp-for="FirstName"></label><input asp-for="FirstName"
+                                                                                                  class="account-input" autocomplete="given-name" /><span asp-validation-for="FirstName"
+                                                                                        class="account-field-error"></span></div>
+                                <div class="form-field"><label asp-for="LastName"></label><input asp-for="LastName"
+                                                                                                     class="account-input" autocomplete="family-name" /><span asp-validation-for="LastName"
+                                                                                             class="account-field-error"></span></div>
+                                </div>
+                                <div class="form-field"><label asp-for="Email"></label><input asp-for="Email"
+                                                                                                  class="account-input account-input-readonly" type="email" readonly /><small
+                                    class="field-hint">البريد الإلكتروني مرتبط بتسجيل الدخول ولا يمكن تغييره من هنا.</small>
+                                </div><button class="account-primary-button" type="submit">حفظ التغييرات <span
+                                aria-hidden="true">←</span></button>
+                            </form>
+                        </section>
+                        <section class="account-settings-card">
+                            <div class="settings-card-heading"><span class="settings-heading-icon">⌑</span>
+                                <div>
+                                    <h2>تغيير كلمة المرور</h2>
+                                    <p>استخدم كلمة مرور قوية للحفاظ على حسابك.</p>
+                                </div>
+                            </div>
+                            <form asp-action="ChangePassword" method="post" class="account-form">
+                                <div class="form-field"><label for="CurrentPassword">كلمة المرور الحالية</label><input
+                                    id="CurrentPassword" name="CurrentPassword" type="password" class="account-input"
+                                    autocomplete="current-password" required /></div>
+                                    <div class="form-field"><label for="NewPassword">كلمة المرور الجديدة</label><input id="NewPassword"
+                                                                                                                           name="NewPassword" type="password" class="account-input" autocomplete="new-password"
+                                                                                                                           minlength="10" required /><small class="field-hint">10 أحرف على الأقل.</small></div>
+                                        <div class="form-field"><label for="ConfirmPassword">تأكيد كلمة المرور الجديدة</label><input
+                                            id="ConfirmPassword" name="ConfirmPassword" type="password" class="account-input"
+                                            autocomplete="new-password" minlength="10" required /></div><button
+                                            class="account-secondary-button" type="submit">تغيير كلمة المرور</button>
+                                        </form>
+                                    </section>
+                                </div>
+                                <div class="settings-help"><span class="settings-help-icon">i</span>
+                                    <div><strong>محتاج مساعدة؟</strong>
+                                        <p>لو واجهت مشكلة في الدخول أو تحديث بياناتك، تواصل مع فريق خدمة العملاء.</p>
+                                    </div><a asp-controller="Home" asp-action="Contact">تواصل معنا ←</a>
+                                </div>
+                            </div>
+                        </section>
+                        @section Scripts {
+                            <partial name="_ValidationScriptsPartial" />
+                        }

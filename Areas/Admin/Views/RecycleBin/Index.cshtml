@@ -1,5 +1,52 @@
 @model IReadOnlyList<EddaStore.Models.ViewModels.Admin.RecycleBin.RecycleBinItemViewModel>
-@{ ViewData["Title"]="سلة المحذوفات"; ViewData["Heading"]="سلة المحذوفات"; }
-<div class="admin-page-header"><div><h2>سلة المحذوفات</h2><p>استعد السجلات الإدارية المحذوفة بأمان. لا يتوفر الحذف النهائي لحماية بيانات المتجر.</p></div></div>
-<form method="get" class="admin-filter" role="search"><input name="search" value="@ViewBag.Search" placeholder="ابحث بالاسم أو الرابط" aria-label="بحث في سلة المحذوفات"/><select name="entityType" aria-label="نوع السجل"><option value="">كل السجلات</option><option value="Product">المنتجات</option><option value="Category">التصنيفات</option><option value="Brand">الماركات</option><option value="Coupon">الكوبونات</option><option value="Review">المراجعات</option></select><button class="dashboard-primary-btn">تطبيق</button><a asp-action="Index" class="admin-secondary-btn">إعادة ضبط</a></form>
-<div class="admin-table-card"><table class="admin-table"><thead><tr><th>السجل</th><th>التفاصيل</th><th>تاريخ الحذف</th><th>إجراء</th></tr></thead><tbody>@foreach(var item in Model){<tr><td><strong>@item.Name</strong></td><td>@item.Detail</td><td>@(item.DeletedAt?.ToLocalTime().ToString("yyyy/MM/dd HH:mm") ?? "—")</td><td><form asp-action="Restore" method="post"><input type="hidden" name="entityType" value="@item.EntityType"/><input type="hidden" name="id" value="@item.Id"/><button class="admin-restore-button" type="submit">استعادة</button></form></td></tr>}@if(!Model.Any()){<tr><td colspan="4" class="admin-empty">سلة المحذوفات فارغة حاليًا.</td></tr>}</tbody></table></div>
+@{
+    ViewData["Title"] = "سلة المحذوفات"; ViewData["Heading"] = "سلة المحذوفات";
+}
+<div class="admin-page-header">
+    <div>
+        <h2>سلة المحذوفات</h2>
+        <p>استعد السجلات الإدارية المحذوفة بأمان. لا يتوفر الحذف النهائي لحماية بيانات المتجر.</p>
+    </div>
+</div>
+<form method="get" class="admin-filter" role="search"><input name="search" value="@ViewBag.Search"
+                                                                 placeholder="ابحث بالاسم أو الرابط" aria-label="بحث في سلة المحذوفات" /><select name="entityType"
+                                                                                aria-label="نوع السجل">
+    <option value="">كل السجلات</option>
+    <option value="Product">المنتجات</option>
+    <option value="Category">التصنيفات</option>
+    <option value="Brand">الماركات</option>
+    <option value="Coupon">الكوبونات</option>
+    <option value="Review">المراجعات</option>
+</select><button class="dashboard-primary-btn">تطبيق</button><a asp-action="Index" class="admin-secondary-btn">إعادة
+ضبط</a></form>
+<div class="admin-table-card">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>السجل</th>
+                <th>التفاصيل</th>
+                <th>تاريخ الحذف</th>
+                <th>إجراء</th>
+            </tr>
+        </thead>
+        <tbody>@foreach(var item in Model){
+            <tr>
+                <td><strong>@item.Name</strong></td>
+                <td>@item.Detail</td>
+                <td>@(item.DeletedAt?.ToLocalTime().ToString("yyyy/MM/dd HH:mm") ?? "—")</td>
+                <td>
+                    <form asp-action="Restore" method="post"><input type="hidden" name="entityType"
+                                                                        value="@item.EntityType" /><input type="hidden" name="id" value="@item.Id" /><button
+                        class="admin-restore-button" type="submit">استعادة</button></form>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="4" class="admin-empty">سلة المحذوفات فارغة حاليًا.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

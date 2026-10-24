@@ -1,6 +1,26 @@
 ﻿@{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "سياسة الخصوصية"; ViewData["MetaDescription"] = "تعرّف على كيفية استخدام البيانات اللازمة لتسجيل الدخول وإدارة السلة والطلبات في متجر عِدّة.";
 }
-<h1>@ViewData["Title"]</h1>
-
-<p>Use this page to detail your site's privacy policy.</p>
+<section class="page-head">
+    <div class="container">
+        <nav class="breadcrumbs" aria-label="مسار الصفحة"><a asp-controller="Home" asp-action="Index">الرئيسية</a><span
+            aria-hidden="true"> / </span><span>سياسة الخصوصية</span></nav>
+            <h1>سياسة الخصوصية</h1>
+            <p>توضيح مختصر للبيانات التي يحتاجها الموقع لتقديم خدماته.</p>
+        </div>
+    </section>
+    <div class="container section">
+        <article class="panel policy-content">
+            <h2>البيانات التي تقدمها</h2>
+            <p>قد تحتاج إلى إدخال بيانات مثل البريد الإلكتروني والاسم ورقم الهاتف وعنوان الاستلام عند إنشاء الحساب أو إتمام
+                الطلب.</p>
+                <h2>كيف تُستخدم البيانات؟</h2>
+                <p>تُستخدم البيانات التي تدخلها لتسجيل الدخول، وإدارة حسابك وسلة التسوق والطلبات، والتواصل معك بشأن الاستفسارات
+                    المرتبطة بطلبك.</p>
+                    <h2>حماية الحساب</h2>
+                    <p>حافظ على سرية كلمة المرور، وسجّل الخروج عند استخدام جهاز مشترك.</p>
+                    <h2>الاستفسارات</h2>
+                    <p>لو عندك سؤال عن بياناتك أو استخدام الموقع، تواصل معنا عبر <a asp-controller="Home" asp-action="Contact">صفحة
+                        تواصل معنا</a>.</p>
+                    </article>
+                </div>

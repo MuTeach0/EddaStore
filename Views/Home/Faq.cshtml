@@ -1,12 +1,35 @@
-@{ ViewData["Title"] = "الأسئلة الشائعة"; }
-<section class="page-head"><div class="container"><div class="breadcrumbs"><a asp-controller="Home" asp-action="Index">الرئيسية</a> / الأسئلة الشائعة</div><h1>الأسئلة الشائعة</h1></div></section>
-<div class="container section">
-    <section class="panel">
-        <h2>كيف أتتبع طلبي؟</h2>
-        <p>يمكنك متابعة حالة الطلب من صفحة "حسابي" ثم "طلباتي".</p>
-        <h2>ما هي طرق الدفع؟</h2>
-        <p>الدفع عند الاستلام حاليًا.</p>
-        <h2>هل يمكن إلغاء الطلب؟</h2>
-        <p>يمكن إلغاء الطلب قبل شحنه من خلال إدارة الطلبات.</p>
+@{
+    ViewData["Title"] = "الأسئلة الشائعة"; ViewData["MetaDescription"] = "إجابات عن التسوق في عِدّة، وتفاصيل المنتجات، ومتابعة الطلبات، وطرق التواصل مع خدمة العملاء.";
+}
+<section class="page-head">
+    <div class="container">
+        <nav class="breadcrumbs" aria-label="مسار الصفحة"><a asp-controller="Home" asp-action="Index">الرئيسية</a><span
+            aria-hidden="true"> / </span><span>الأسئلة الشائعة</span></nav>
+            <h1>الأسئلة الشائعة</h1>
+            <p>معلومات تساعدك قبل ما تختار وتطلب.</p>
+        </div>
     </section>
-</div>
+    <div class="container section">
+        <section class="faq-list panel">
+            <details open>
+                <summary>إزاي أعرف مواصفات المنتج؟</summary>
+                <p>افتح صفحة المنتج لمراجعة الوصف والسعر وحالة التوفر. لو محتاج توضيح إضافي، تواصل معنا عبر واتساب.</p>
+            </details>
+            <details>
+                <summary>إزاي أتابع طلبي؟</summary>
+                <p>سجّل الدخول وافتح صفحة حسابك لمراجعة الطلبات المسجلة وتفاصيل كل طلب.</p>
+            </details>
+            <details>
+                <summary>هل أقدر أحفظ منتج للرجوع له بعدين؟</summary>
+                <p>تقدر تضيف المنتجات إلى المفضلة بعد تسجيل الدخول.</p>
+            </details>
+            <details>
+                <summary>إزاي أتواصل مع خدمة العملاء؟</summary>
+                <p>راسلنا على واتساب من خلال زر التواصل الموجود في الموقع أو صفحة تواصل معنا.</p>
+            </details>
+            <details>
+                <summary>إيه طريقة الدفع المتاحة؟</summary>
+                <p>الدفع عند الاستلام. راجع بيانات الطلب قبل تأكيده، ولو عندك استفسار تواصل معنا عبر واتساب.</p>
+            </details>
+        </section>
+    </div>

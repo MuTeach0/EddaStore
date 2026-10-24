@@ -1,3 +1,66 @@
 @model EddaStore.Models.Orders.Order
-@{ ViewData["Title"] = "تفاصيل الطلب"; }
-<section class="page-head"><div class="container"><div class="breadcrumbs"><a asp-action="Index">حسابي</a> / @Model.OrderNumber</div><h1>طلب @Model.OrderNumber</h1><p>الحالة: @Model.Status</p></div></section><div class="container section"><section class="panel"><h2>المنتجات</h2><div class="table-wrap"><table><thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>@foreach(var item in Model.Items){<tr><td>@item.ProductName</td><td>@item.Quantity</td><td>@item.UnitPrice.ToString("N0") ج.م</td><td>@item.LineTotal.ToString("N0") ج.م</td></tr>}</tbody></table></div><div class="summary-line summary-total"><span>إجمالي الطلب</span><strong>@Model.TotalAmount.ToString("N0") ج.م</strong></div></section></div>
+@{
+    ViewData["Title"] = "تفاصيل الطلب"; ViewData["Robots"] = "noindex, follow";
+}
+<section class="account-page">
+    <div class="container account-wrap">
+        <nav class="account-breadcrumb"><a asp-controller="Home" asp-action="Index">الرئيسية</a><span> / </span><a
+            asp-action="Index">حسابي</a><span> / </span><span>@Model.OrderNumber</span></nav>
+            <header class="account-page-heading">
+                <div><span class="auth-eyebrow">تفاصيل مشترياتك</span>
+                    <h1>طلب رقم @Model.OrderNumber</h1>
+                    <p>راجع المنتجات الموجودة في الطلب والإجمالي الخاص به.</p>
+                </div>
+                <div class="order-detail-status"><small>حالة الطلب</small><strong>@(Model.Status switch
+                    {
+                        "Pending" => "قيد الانتظار",
+                        "Processing" => "قيد التجهيز",
+                        "Shipped" => "تم الشحن",
+                        "Delivered" => "تم التسليم",
+                        "Cancelled" => "ملغي",
+                        _ => Model.Status
+                    })</strong></div>
+                </header>
+                <div class="order-detail-grid">
+                    <section class="account-settings-card order-products-card">
+                        <div class="account-section-heading">
+                            <div>
+                                <h2>المنتجات في الطلب</h2>
+                                <p>تفاصيل المنتجات والكميات والأسعار.</p>
+                            </div><span class="section-mark">▤</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>المنتج</th>
+                                        <th>الكمية</th>
+                                        <th>سعر الوحدة</th>
+                                        <th>الإجمالي</th>
+                                    </tr>
+                                </thead>
+                                <tbody>@foreach (var item in Model.Items) {
+                                    <tr>
+                                        <td><strong>@item.ProductName</strong></td>
+                                        <td>@item.Quantity</td>
+                                        <td>@item.UnitPrice.ToString("N0") ج.م</td>
+                                        <td><strong>@item.LineTotal.ToString("N0") ج.م</strong></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="order-total-box"><span>إجمالي الطلب</span><strong>@Model.TotalAmount.ToString("N0")
+                        <small>ج.م</small></strong></div>
+                    </section>
+                    <aside class="order-detail-aside">
+                        <div class="order-aside-icon">✓</div>
+                        <h2>تفاصيل الطلب</h2>
+                        <p>يمكنك مراجعة المنتجات والكميات والأسعار المسجلة في هذا الطلب من هنا.</p>
+                        <div class="order-aside-divider"></div><a class="account-primary-button account-button-link"
+                                                                  asp-action="Index">العودة إلى حسابي <span aria-hidden="true">←</span></a><a class="order-back-link"
+                                                                                                    asp-controller="Store" asp-action="Index">مواصلة التسوق</a>
+                    </aside>
+                </div>
+            </div>
+        </section>

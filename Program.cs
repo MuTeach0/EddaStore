@@ -1,3 +1,5 @@
+using EddaStore.Filters;
+using System.Security.Claims;
 using EddaStore.Data;
 using EddaStore.Models.Identity;
 using EddaStore.Repositories.Implementations;
@@ -6,10 +8,8 @@ using EddaStore.Repositories.Interfaces;
 using EddaStore.Services;
 using EddaStore.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -30,13 +30,14 @@ builder.Services
     .AddDefaultIdentity<ApplicationUser>(options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
+        options.Lockout.AllowedForNewUsers = true;
 
         options.User.RequireUniqueEmail = true;
 
         options.Password.RequiredLength = 10;
         options.Password.RequireDigit = true;
         options.Password.RequireUppercase = true;
-        options.Password.RequireLowercase = true;
+        options.Password.RequireLowercase = false;
         options.Password.RequireNonAlphanumeric = false;
 
         options.Lockout.MaxFailedAccessAttempts = 5;
@@ -44,7 +45,8 @@ builder.Services
             TimeSpan.FromMinutes(15);
     })
     .AddRoles<IdentityRole<Guid>>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
 // Google OAuth
 // يتم تفعيل Google فقط بعد تخزين ClientId و ClientSecret
@@ -65,13 +67,28 @@ if (!string.IsNullOrWhiteSpace(googleClientId) &&
             options.ClientId = googleClientId;
             options.ClientSecret = googleClientSecret;
             options.CallbackPath = "/signin-google";
-            options.SaveTokens = true;
+            options.SignInScheme = IdentityConstants.ExternalScheme;
+            options.SaveTokens = false;
+            options.Scope.Add("email");
+            options.Scope.Add("profile");
 
             // Google's OpenID Connect userinfo response includes
             // "email_verified" as a JSON boolean. Map it to a claim so
             // ExternalLogin can verify the e-mail address reliably.
+            options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
             options.ClaimActions.MapJsonKey("email_verified", "email_verified");
-            options.ClaimActions.MapJsonKey("email_verified", "verified_email");
+            options.ClaimActions.MapJsonKey("verified_email", "verified_email");
+            options.ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
+            options.ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
+            options.Events.OnRemoteFailure = context =>
+            {
+                context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("Authentication.Google")
+                    .LogWarning("Google authentication failed at the external provider.");
+                context.Response.Redirect("/Account/Login?googleError=true");
+                context.HandleResponse();
+                return Task.CompletedTask;
+            };
         });
 }
 
@@ -79,17 +96,21 @@ if (!string.IsNullOrWhiteSpace(googleClientId) &&
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.SlidingExpiration = true;
-    options.ExpireTimeSpan = TimeSpan.FromDays(14);
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
 });
 builder.Services.ConfigureExternalCookie(options =>
 {
     options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+    options.ValidationInterval = TimeSpan.FromMinutes(2));
 
 // Rate limiting for sensitive authentication endpoints.
 builder.Services.AddRateLimiter(options =>
@@ -107,10 +128,10 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
-// MVC and Razor Pages
+// MVC only: authentication pages are implemented as MVC views.
 builder.Services.AddHealthChecks().AddDbContextCheck<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
+builder.Services.AddScoped<RequireCompleteProfileFilter>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICatalogRepository, CatalogRepository>();
@@ -125,7 +146,11 @@ builder.Services.AddScoped<IRecycleBinService, RecycleBinService>();
 builder.Services.AddScoped<IStoreCatalogService, StoreCatalogService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<ICheckoutService, CheckoutService>();
-builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, EddaStore.Services.EmailSender>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IHomeService, HomeService>();
+builder.Services.AddScoped<IAdminUsersService, AdminUsersService>();
+builder.Services.AddScoped<IAdminToolsService, AdminToolsService>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 var app = builder.Build();
 
 // HTTP pipeline
@@ -137,26 +162,20 @@ if (!app.Environment.IsDevelopment())
 
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider
-        .GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-
-    if (!await roleManager.RoleExistsAsync("Admin"))
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+    foreach (var roleName in new[] { "Admin", "Customer" })
     {
-        var result = await roleManager.CreateAsync(
-            new IdentityRole<Guid>("Admin"));
-
-        if (!result.Succeeded)
+        if (!await roleManager.RoleExistsAsync(roleName))
         {
-            var errors = string.Join(
-                "; ",
-                result.Errors.Select(error => error.Description));
-
-            throw new InvalidOperationException(
-                $"Could not create Admin role: {errors}");
+            var result = await roleManager.CreateAsync(new IdentityRole<Guid>(roleName));
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("; ", result.Errors.Select(error => error.Description));
+                throw new InvalidOperationException($"Could not create {roleName} role: {errors}");
+            }
         }
     }
 }
-
 
 app.Use(async (context, next) =>
 {
@@ -171,10 +190,9 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseRateLimiter();
 
 app.MapControllerRoute(
     name: "areas",
@@ -185,7 +203,6 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapHealthChecks("/health");
-app.MapRazorPages();
 
 // Development-only diagnostic endpoints.
 // Registered only in Development and restricted to loopback clients.
@@ -211,9 +228,8 @@ if (app.Environment.IsDevelopment())
         }
 
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
-        var code = WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes(token));
-        var callbackUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/Identity/Account/ResetPassword?code={Uri.EscapeDataString(code)}&email={Uri.EscapeDataString(user.Email!)}";
-        return Results.Ok(new { code, callbackUrl });
+        var callbackUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/Account/ResetPassword?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email!)}";
+        return Results.Ok(new { token, callbackUrl });
     });
 
     // Development-only diagnostic endpoint for verifying SMTP delivery.

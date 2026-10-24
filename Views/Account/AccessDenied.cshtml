@@ -1,0 +1,29 @@
+@{
+    ViewData["Title"] = "غير مسموح بالدخول"; ViewData["Robots"] = "noindex, follow";
+}
+<section class="account-page">
+    <div class="container account-wrap">
+        <div class="auth-layout auth-layout-compact">
+            <section class="auth-panel auth-result-panel">
+                <div class="result-icon result-icon-warning" aria-hidden="true">!</div><span class="auth-eyebrow">الوصول
+                مقيّد</span>
+                <h1>الصفحة دي مش متاحة لحسابك</h1>
+                <p class="result-description">الحساب الحالي لا يمتلك الصلاحيات اللازمة لعرض الصفحة. لو شايف إن ده حصل
+                    بالخطأ، تواصل مع إدارة المتجر.</p><a class="account-primary-button account-button-link"
+                                                         asp-controller="Store" asp-action="Index">العودة إلى المتجر <span aria-hidden="true">←</span></a>
+                    <p class="result-note"><a asp-controller="Home" asp-action="Contact">تحتاج مساعدة؟ تواصل معنا</a></p>
+                </section>
+                <aside class="auth-showcase auth-showcase-compact">
+                    <div class="showcase-topline"><span class="showcase-logo">عِدّة</span><span class="showcase-en">ACCOUNT
+                        ACCESS</span></div>
+                        <div class="showcase-copy"><span class="showcase-pill"><i></i> بنحافظ على أمانك</span>
+                            <h2>صلاحيات واضحة،<br /><em>تجربة آمنة.</em></h2>
+                            <p>بعض الصفحات متاحة لحسابات محددة فقط لحماية بياناتك وبيانات المتجر.</p>
+                        </div>
+                        <div class="showcase-orbit orbit-one"></div>
+                        <div class="showcase-orbit orbit-two"></div>
+                        <div class="showcase-bottom">عِدّة <span>✳</span></div>
+                    </aside>
+                </div>
+            </div>
+        </section>
