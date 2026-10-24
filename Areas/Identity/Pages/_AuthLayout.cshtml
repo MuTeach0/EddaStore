@@ -1,0 +1,28 @@
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+<div class="container">
+    <div class="auth-wrap">
+        <aside class="auth-visual">
+            <div>
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="auth-brand" aria-label="عِدّة - الصفحة الرئيسية">
+                    <img src="~/assets/brand-mark.svg" asp-append-version="true" alt="شعار عِدّة" />
+                    <span><b class="auth-brand-name">عِدّة</b><small>تقنيتك تبدأ من هنا</small></span>
+                </a>
+                <h2>اختيارك التقني،<br />بثقة وراحة.</h2>
+                <p>كل احتياجاتك التقنية في تجربة واحدة بسيطة وواضحة.</p>
+            </div>
+            <p class="auth-visual-note">منتجات مختارة • تجربة أسهل • عِدّة معاك</p>
+        </aside>
+        <section class="auth-panel">
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="auth-return"><span aria-hidden="true">→</span> العودة للمتجر</a>
+            @RenderBody()
+        </section>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+}

@@ -1,0 +1,33 @@
+/* Razor integration for the supplied EDDA frontend. */
+body { min-height: 100vh; display: flex; flex-direction: column; }
+main { flex: 1; }
+.brand-tag { display: block; }
+.header-login-link,.header-admin-link,.header-logout-button { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:43px; border:1px solid var(--line); border-radius:14px; padding:0 13px; color:var(--forest); font-size:13px; font-weight:800; white-space:nowrap; }
+.header-login-link:hover,.header-logout-button:hover { background:var(--cream); border-color:var(--gold); }
+.header-admin-link { background:var(--forest); border-color:var(--forest); color:#fff; }
+.header-admin-link:hover { background:var(--deep); color:#fff; }
+.logout-form { margin:0; display:inline-flex; }
+.pagination { display:flex; align-items:center; justify-content:center; gap:12px; margin-top:28px; }
+.filters input[type="number"] { width:100%; border:1px solid var(--line); border-radius:9px; padding:8px; margin-top:5px; }
+.cart-item .quantity { margin-top:9px; }
+.cart-item .quantity input { height:38px; }
+.cart-item .quantity button { border:0; background:var(--forest); color:#fff; height:38px; padding:0 10px; cursor:pointer; }
+.cart-item form { margin:0; }
+.text-link[type="submit"] { border:0; background:transparent; padding:6px 0; cursor:pointer; font:inherit; }
+.auth-panel { min-width:0; padding:42px; display:flex; flex-direction:column; justify-content:center; background:#fff; }
+.auth-return { align-self:flex-start; color:var(--muted); font-size:13px; font-weight:800; margin-bottom:24px; }
+.auth-panel h1 { color:var(--forest); font-size:30px; margin:0; }
+.auth-panel > p { color:var(--muted); margin:5px 0 25px; }
+.auth-panel .auth-form { padding:0; min-height:0; margin:0; gap:14px; }
+.auth-field { display:flex; flex-direction:column; gap:6px; }
+.auth-field label { color:#3f4941; font-size:14px; font-weight:800; }
+.auth-field input { width:100%; border:1px solid var(--line); border-radius:12px; padding:12px 13px; outline:0; background:#fff; }
+.auth-primary,.auth-google { border:1px solid transparent; border-radius:13px; padding:12px 20px; font-weight:800; cursor:pointer; }
+.auth-primary { background:var(--forest); color:#fff; }
+.auth-google { width:100%; background:#fff; color:var(--forest); border-color:var(--line); }
+.auth-links { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:13px; color:var(--forest); font-weight:800; }
+.auth-note,.auth-validation { color:var(--muted); font-size:13px; }
+.auth-validation { color:#9b3730; }
+@media (max-width:720px) { .auth-panel { padding:27px 22px; } }
+@media (max-width:720px) { .cart-item>div:last-child { grid-column:2; display:flex; align-items:center; justify-content:space-between; } }
+@media (max-width:720px) { .header-login-link,.header-admin-link,.header-logout-button { min-height:39px; padding:0 10px; font-size:12px; } .header-admin-link span { display:none; } }

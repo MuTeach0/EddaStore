@@ -1,0 +1,36 @@
+@{ ViewData["Title"] = "بحث"; ViewData["Heading"] = "بحث"; }
+<div class="page-head"><div><div class="eyebrow">عِدّة / لوحة الإدارة</div><h1>بحث</h1><p>ابحث في المنتجات، الطلبات، والعملاء.</p></div></div>
+<form method="get" class="filters" style="margin-bottom:16px;">
+    <label>استعلام <input name="q" value="@ViewBag.Query" /></label>
+    <button class="btn" type="submit">بحث</button>
+</form>
+@if (!string.IsNullOrWhiteSpace((string?)ViewBag.Query))
+{
+    <section class="panel">
+        <div class="panel-head"><div><h2>المنتجات</h2></div></div>
+        <div class="table-wrap"><table><thead><tr><th>الاسم</th><th>SKU</th><th>المخزون</th></tr></thead><tbody>
+        @foreach (var p in (List<EddaStore.Models.Products.Product>)ViewBag.Products)
+        {
+            <tr><td>@p.Name</td><td dir="ltr">@(p.SKU ?? "—")</td><td>@p.StockQuantity</td></tr>
+        }
+        </tbody></table></div>
+    </section>
+    <section class="panel">
+        <div class="panel-head"><div><h2>الطلبات</h2></div></div>
+        <div class="table-wrap"><table><thead><tr><th>رقم الطلب</th><th>الحالة</th><th>المبلغ</th></tr></thead><tbody>
+        @foreach (var o in (List<EddaStore.Models.Orders.Order>)ViewBag.Orders)
+        {
+            <tr><td dir="ltr">@o.OrderNumber</td><td>@o.Status</td><td>@o.TotalAmount.ToString("N0")</td></tr>
+        }
+        </tbody></table></div>
+    </section>
+    <section class="panel">
+        <div class="panel-head"><div><h2>العملاء</h2></div></div>
+        <div class="table-wrap"><table><thead><tr><th>البريد</th><th>اسم المستخدم</th></tr></thead><tbody>
+        @foreach (var c in (List<EddaStore.Models.Identity.ApplicationUser>)ViewBag.Customers)
+        {
+            <tr><td dir="ltr">@c.Email</td><td>@c.UserName</td></tr>
+        }
+        </tbody></table></div>
+    </section>
+}

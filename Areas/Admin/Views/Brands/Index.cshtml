@@ -1,0 +1,4 @@
+@model IEnumerable<EddaStore.Models.Products.Brand>
+@{ ViewData["Title"]="إدارة الماركات"; ViewData["Heading"]="الماركات"; }
+<div class="admin-page-header"><div><h2>إدارة الماركات</h2><p>أدر العلامات التجارية المعروضة في المتجر.</p></div><a asp-action="Create" class="dashboard-primary-btn">+ إضافة ماركة</a></div>
+<div class="admin-table-card"><table class="admin-table"><thead><tr><th>الماركة</th><th>الرابط</th><th>المنتجات</th><th>الإجراءات</th></tr></thead><tbody>@foreach(var x in Model){<tr><td><strong>@x.Name</strong><small>@x.Description</small></td><td dir="ltr">@x.Slug</td><td>@x.Products.Count</td><td class="admin-actions"><a asp-action="Edit" asp-route-id="@x.Id">تعديل</a><form asp-action="Delete" asp-route-id="@x.Id" method="post" onsubmit="return confirm('هل تريد حذف هذه الماركة؟');"><button>حذف</button></form></td></tr>}@if(!Model.Any()){<tr><td colspan="4" class="admin-empty">لا توجد ماركات بعد.</td></tr>}</tbody></table></div>

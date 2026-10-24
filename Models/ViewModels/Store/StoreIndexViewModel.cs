@@ -1,0 +1,3 @@
+using EddaStore.Models.Products;
+namespace EddaStore.Models.ViewModels.Store;
+public class StoreIndexViewModel { public IReadOnlyList<Product> Products {get;set;}=Array.Empty<Product>(); public IReadOnlyList<Category> Categories {get;set;}=Array.Empty<Category>(); public IReadOnlyList<Brand> Brands {get;set;}=Array.Empty<Brand>(); public string? Query {get;set;} public string? Category {get;set;} public string? Brand {get;set;} public string Sort {get;set;}="newest"; public decimal? MinPrice {get;set;} public decimal? MaxPrice {get;set;} public int Page {get;set;}=1; public int TotalCount {get;set;} public int PageSize {get;set;}=12; public int TotalPages => (int)Math.Ceiling(TotalCount/(double)PageSize); }

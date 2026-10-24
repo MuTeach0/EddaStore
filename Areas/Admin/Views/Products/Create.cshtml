@@ -1,0 +1,141 @@
+@model EddaStore.Models.ViewModels.Admin.Products.ProductCreateViewModel
+
+@{
+    ViewData["Title"] = "إضافة منتج";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div dir="rtl" class="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-5xl space-y-6">
+
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900">إضافة منتج جديد</h1>
+                <p class="mt-2 text-sm text-slate-500">أدخل بيانات المنتج لإضافته إلى المتجر.</p>
+            </div>
+            <a asp-action="Index"
+               class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100">
+                العودة للمنتجات
+            </a>
+        </div>
+
+        <form asp-action="Create" method="post" enctype="multipart/form-data" class="space-y-6">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"></div>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 class="mb-5 text-lg font-black text-slate-900">المعلومات الأساسية</h2>
+
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <div>
+                        <label asp-for="Name" class="mb-2 block text-sm font-bold text-slate-700"></label>
+                        <input asp-for="Name"
+                               class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-700 focus:ring-2 focus:ring-slate-100" />
+                        <span asp-validation-for="Name" class="mt-1 block text-sm text-red-600"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="Slug" class="mb-2 block text-sm font-bold text-slate-700"></label>
+                        <input asp-for="Slug" dir="ltr"
+                               class="w-full rounded-xl border border-slate-300 px-4 py-3 text-left outline-none focus:border-slate-700 focus:ring-2 focus:ring-slate-100" />
+                        <span asp-validation-for="Slug" class="mt-1 block text-sm text-red-600"></span>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label asp-for="Description" class="mb-2 block text-sm font-bold text-slate-700"></label>
+                        <textarea asp-for="Description" rows="5"
+                                  class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-700 focus:ring-2 focus:ring-slate-100"></textarea>
+                        <span asp-validation-for="Description" class="mt-1 block text-sm text-red-600"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 class="mb-5 text-lg font-black text-slate-900">صور المنتج</h2>
+                <label asp-for="NewImages" class="mb-2 block text-sm font-bold text-slate-700"></label>
+                <input asp-for="NewImages" type="file" multiple accept="image/jpeg,image/png,image/webp" class="w-full rounded-xl border border-slate-300 px-4 py-3" />
+                <span class="mt-1 block text-sm text-slate-500">JPG أو PNG أو WEBP، وبحد أقصى 5MB للصورة.</span>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 class="mb-5 text-lg font-black text-slate-900">السعر والمخزون</h2>
+
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <div>
+                        <label asp-for="Price" class="mb-2 block text-sm font-bold text-slate-700"></label>
+                        <input asp-for="Price" type="number" min="0.01" step="0.01"
+                               class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-700" />
+                        <span asp-validation-for="Price" class="mt-1 block text-sm text-red-600"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="CompareAtPrice" class="mb-2 block text-sm font-bold text-slate-700"></label>
+                        <input asp-for="CompareAtPrice" type="number" min="0.01" step="0.01"
+                               class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-700" />
+                        <span asp-validation-for="CompareAtPrice" class="mt-1 block text-sm text-red-600"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="StockQuantity" class="mb-2 block text-sm font-bold text-slate-700"></label>
+                        <input asp-for="StockQuantity" type="number" min="0" step="1"
+                               class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-700" />
+                        <span asp-validation-for="StockQuantity" class="mt-1 block text-sm text-red-600"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="SKU" class="mb-2 block text-sm font-bold text-slate-700"></label>
+                        <input asp-for="SKU" dir="ltr"
+                               class="w-full rounded-xl border border-slate-300 px-4 py-3 text-left outline-none focus:border-slate-700" />
+                        <span asp-validation-for="SKU" class="mt-1 block text-sm text-red-600"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 class="mb-5 text-lg font-black text-slate-900">التصنيف والعلامة التجارية</h2>
+
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <div>
+                        <label asp-for="CategoryId" class="mb-2 block text-sm font-bold text-slate-700"></label>
+                        <select asp-for="CategoryId" asp-items="Model.Categories"
+                                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3">
+                            <option value="">اختر التصنيف</option>
+                        </select>
+                        <span asp-validation-for="CategoryId" class="mt-1 block text-sm text-red-600"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="BrandId" class="mb-2 block text-sm font-bold text-slate-700"></label>
+                        <select asp-for="BrandId" asp-items="Model.Brands"
+                                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3">
+                            <option value="">اختر الماركة</option>
+                        </select>
+                        <span asp-validation-for="BrandId" class="mt-1 block text-sm text-red-600"></span>
+                    </div>
+                </div>
+
+                <label class="mt-6 flex items-center gap-3 text-sm font-bold text-slate-700">
+                    <input asp-for="IsActive" class="h-4 w-4 rounded border-slate-300" />
+                    المنتج نشط
+                </label>
+            </section>
+
+            <div class="flex flex-wrap justify-end gap-3">
+                <a asp-action="Index"
+                   class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700">
+                    إلغاء
+                </a>
+                <button type="submit"
+                        class="rounded-xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition hover:bg-slate-700">
+                    حفظ المنتج
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
