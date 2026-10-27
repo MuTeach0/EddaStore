@@ -24,6 +24,7 @@ Context.Request.Path.StartsWithSegments("/Cart") || Context.Request.Path.StartsW
     <meta property="og:title" content="@fullTitle" />
     <meta property="og:description" content="@metaDescription" />
     <meta property="og:url" content="@canonicalUrl" />
+    <meta name="google-site-verification" content="I7StgNYwuUwLR7dLZ6su5V-DhhOTdnoBNLV-wZUC9dY" />
     <script
     type="application/ld+json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?> { ["\u0040context"] = "https://schema.org", ["\u0040type"] = "Organization", ["name"] = "عِدّة EddaStore", ["description"] = metaDescription, ["telephone"] = "+201002270587", ["url"] = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.PathBase}", ["logo"] = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.PathBase}/assets/brand-mark.svg" }))</script>
     <title>@fullTitle</title>
