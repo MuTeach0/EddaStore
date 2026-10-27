@@ -1,4 +1,4 @@
-@model IReadOnlyList<EddaStore.Models.Customers.WishlistItem>
+﻿@model IReadOnlyList<EddaStore.Models.Customers.WishlistItem>
 @{
     ViewData["Title"] = "المفضلة"; ViewData["Robots"] = "noindex, follow";
 }
@@ -9,34 +9,54 @@
         <p>منتجاتك المحفوظة مرتبطة بحسابك.</p>
     </div>
 </section>
-<div class="container section">@if(!Model.Any()){
-    <div class="empty">
-        <div class="empty-icon">♡</div>
-        <h2>لا توجد منتجات محفوظة</h2><a class="btn btn-primary" asp-controller="Store" asp-action="Index">اكتشف
-        المنتجات</a>
-    </div>
-}else
-{
-
-    <div class="product-grid">@foreach(var item in Model){var
-        image = item.Product.Images.OrderByDescending(x => x.IsPrimary).ThenBy(x =>
-        x.SortOrder).FirstOrDefault()?.ImageUrl;
-        <article class="product-card">@if(image is not null){
-            <img src="@image" alt="@item.Product.Name" />
-        }
-        <h3><a asp-controller="Store" asp-action="Details"
-                   asp-route-slug="@item.Product.Slug">@item.Product.Name</a></h3><strong
-            class="price">@item.Product.Price.ToString("N0") ج.م</strong>
-            <div class="card-actions">
-                <form asp-controller="Cart" asp-action="Add" method="post"><input type="hidden" name="productId"
-                                                                                      value="@item.ProductId" /><input type="hidden" name="returnUrl"
-                                                     value="@Url.Action("Index")" /><button class="btn btn-primary" type="submit">أضف للسلة</button>
-                </form>
-                <form asp-action="Remove" method="post"><input type="hidden" name="productId"
-                                                                   value="@item.ProductId" /><button class="text-link" type="submit">حذف</button></form>
-                </div>
-            </article>
-        }
-    </div>
-}
+<div class="container section">
+    @if (!Model.Any())
+    {
+        <div class="empty">
+            <div class="empty-icon">♡</div>
+            <h2>لا توجد منتجات محفوظة</h2>
+            <a class="btn btn-primary" asp-controller="Store" asp-action="Index">اكتشف المنتجات</a>
+        </div>
+    }
+    else
+    {
+        <div class="wishlist-list">
+            @foreach (var item in Model)
+            {
+                var image = item.Product.Images.OrderByDescending(x => x.IsPrimary).ThenBy(x => x.SortOrder).FirstOrDefault();
+                <article class="wishlist-item">
+                    <div class="wishlist-photo">
+                        @if (!string.IsNullOrWhiteSpace(image?.ImageUrl))
+                        {
+                            <img src="@image.ImageUrl" alt="@(image.AltText ?? item.Product.Name)" loading="lazy" />
+                        }
+                        else
+                        {
+                            <span class="image-fallback">لا تتوفر صورة</span>
+                        }
+                    </div>
+                    <div class="wishlist-info">
+                        <a class="wishlist-title" asp-controller="Store" asp-action="Details" asp-route-slug="@item.Product.Slug">@item.Product.Name</a>
+                        @if (!string.IsNullOrWhiteSpace(item.Product.Brand?.Name))
+                        {
+                            <div class="wishlist-meta">@item.Product.Brand.Name</div>
+                        }
+                        <div class="wishlist-price">@item.Product.Price.ToString("N0") ج.م</div>
+                        <div class="wishlist-actions">
+                            <a class="btn btn-primary" asp-controller="Store" asp-action="Details" asp-route-slug="@item.Product.Slug">عرض التفاصيل</a>
+                            <form asp-controller="Cart" asp-action="Add" method="post">
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <input type="hidden" name="returnUrl" value="@Url.Action("Index")" />
+                                <button class="btn btn-secondary" type="submit">أضف للسلة</button>
+                            </form>
+                            <form asp-action="Remove" method="post">
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <button class="text-link" type="submit">حذف</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
 </div>

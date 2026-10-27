@@ -1,6 +1,7 @@
 using System.Data;
 using EddaStore.Constants;
 using EddaStore.Data;
+using EddaStore.Models.Customers;
 using EddaStore.Models.Orders;
 using EddaStore.Models.Payments;
 using EddaStore.Models.ViewModels.Store;
@@ -77,9 +78,46 @@ public class CheckoutService(ApplicationDbContext context, IEmailSender emailSen
             var order = new Order { CustomerId = customerId, CheckoutToken = input.CheckoutToken, CouponCode = couponCode, OrderNumber = "ED-" + Guid.NewGuid().ToString("N")[..10].ToUpperInvariant(), Status = OrderStatuses.Pending, Subtotal = subtotal, DiscountAmount = discount, ShippingCost = 0m, TotalAmount = subtotal - discount, Currency = "EGP", PlacedAt = DateTimeOffset.UtcNow };
             foreach (var line in cart.Items) { var p = products[line.ProductId]; p.StockQuantity -= line.Quantity; order.Items.Add(new OrderItem { ProductId = p.Id, ProductName = p.Name, SKU = p.SKU, UnitPrice = p.Price, Quantity = line.Quantity, LineTotal = p.Price * line.Quantity }); }
             context.Orders.Add(order);
-            context.OrderAddresses.Add(new OrderAddress { Order = order, RecipientName = input.RecipientName.Trim(), PhoneNumber = input.PhoneNumber.Trim(), City = input.City.Trim(), StreetAddress = input.StreetAddress.Trim(), Building = input.Building?.Trim(), Apartment = input.Apartment?.Trim(), PostalCode = input.PostalCode?.Trim() });
-            context.Payments.Add(new Payment { Order = order, Provider = "CashOnDelivery", Status = "Pending", Amount = order.TotalAmount });
-            context.OrderStatusHistories.Add(new OrderStatusHistory { Order = order, Status = OrderStatuses.Pending, ChangedAt = DateTimeOffset.UtcNow });
+
+            Address? selectedAddress = null;
+            if (input.SelectedAddressId.HasValue)
+            {
+                selectedAddress = await context.Addresses.FirstOrDefaultAsync(x => x.Id == input.SelectedAddressId.Value && x.CustomerId == customerId, ct);
+                if (selectedAddress is null) throw new InvalidOperationException("العنوان المحدد غير متاح.");
+            }
+
+            var recipientName = selectedAddress?.FullName ?? input.RecipientName.Trim();
+            var phoneNumber = selectedAddress?.PhoneNumber ?? input.PhoneNumber.Trim();
+            var country = selectedAddress?.Country ?? "Egypt";
+            var stateOrGovernorate = selectedAddress?.StateOrGovernorate;
+            var city = selectedAddress?.City ?? input.City.Trim();
+            var streetAddress = selectedAddress?.StreetAddress ?? input.StreetAddress.Trim();
+            var building = selectedAddress?.Building ?? input.Building?.Trim();
+            var apartment = selectedAddress?.Apartment ?? input.Apartment?.Trim();
+            var postalCode = selectedAddress?.PostalCode ?? input.PostalCode?.Trim();
+
+            context.OrderAddresses.Add(new OrderAddress { Order = order, RecipientName = recipientName, PhoneNumber = phoneNumber, Country = country, StateOrGovernorate = stateOrGovernorate, City = city, StreetAddress = streetAddress, Building = building, Apartment = apartment, PostalCode = postalCode });
+            context.Payments.Add(new Payment { Order = order, Provider = "Manual", Status = PaymentStatuses.Pending, Amount = 0m, RequiredAmount = order.TotalAmount, Currency = "EGP" });
+
+            if (selectedAddress is null)
+            {
+                var savedAddress = await context.Addresses.FirstOrDefaultAsync(x => x.CustomerId == customerId && x.IsDefault, ct);
+                if (savedAddress is null)
+                {
+                    savedAddress = new Address { CustomerId = customerId, IsDefault = true };
+                    context.Addresses.Add(savedAddress);
+                }
+                savedAddress.FullName = recipientName;
+                savedAddress.PhoneNumber = phoneNumber;
+                savedAddress.Country = country;
+                savedAddress.StateOrGovernorate = stateOrGovernorate;
+                savedAddress.City = city;
+                savedAddress.StreetAddress = streetAddress;
+                savedAddress.Building = building;
+                savedAddress.Apartment = apartment;
+                savedAddress.PostalCode = postalCode;
+            }
+            context.OrderStatusHistories.Add(new OrderStatusHistory { Order = order, Status = OrderStatuses.Pending, ChangedAt = DateTimeOffset.UtcNow, Note = "تم استلام الطلب. في انتظار تأكيد توفر المنتجات وتكلفة الشحن وترتيب الدفع." });
             context.CartItems.RemoveRange(cart.Items);
             await context.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
@@ -93,7 +131,7 @@ public class CheckoutService(ApplicationDbContext context, IEmailSender emailSen
                     await emailSender.SendEmailAsync(
                         customer.Email!,
                         "تأكيد الطلب - عِدّة",
-                        $"<p>تم استلام طلبك رقم <strong>{order.OrderNumber}</strong>.</p><ul>{itemsHtml}</ul><p>الإجمالي: {order.TotalAmount:N0} ج.م</p><p>طريقة الدفع: الدفع عند الاستلام.</p>");
+                        $"<p>تم استلام طلبك رقم <strong>{order.OrderNumber}</strong>.</p><ul>{itemsHtml}</ul><p>إجمالي المنتجات: {order.TotalAmount:N0} ج.م</p><p>سيتم التواصل معك عبر واتساب لتأكيد توفر المنتجات وتكلفة الشحن وترتيب الدفع. التجهيز يبدأ فقط بعد تحقق الدفع المطلوب.</p>");
                 }
             }
             catch (Exception ex)

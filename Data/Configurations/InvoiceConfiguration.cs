@@ -37,7 +37,7 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
             .IsUnique();
 
         builder.HasOne(x => x.Order)
-            .WithOne()
+            .WithOne(x => x.Invoice)
             .HasForeignKey<Invoice>(x => x.OrderId)
             .OnDelete(DeleteBehavior.Restrict);
 

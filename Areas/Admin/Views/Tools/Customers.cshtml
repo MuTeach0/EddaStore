@@ -1,6 +1,7 @@
 @model IEnumerable<EddaStore.Models.Identity.ApplicationUser>
 @{
     ViewData["Title"] = "العملاء"; ViewData["Heading"] = "العملاء";
+    var addresses = ViewBag.Addresses as List<EddaStore.Models.Customers.Address> ?? new();
 }
 <div class="page-head">
     <div>
@@ -16,6 +17,7 @@
                 <tr>
                     <th>البريد الإلكتروني</th>
                     <th>الهاتف</th>
+                    <th>العنوان المحفوظ</th>
                     <th>تاريخ الإنشاء</th>
                     <th>الإجراء</th>
                 </tr>
@@ -24,15 +26,29 @@
                 <tr>
                     <td><b>@user.Email</b></td>
                     <td>@(user.PhoneNumber ?? "—")</td>
+                    @{
+                        var addr = addresses.Where(a => a.CustomerId == user.Id).OrderByDescending(a => a.IsDefault).ThenByDescending(a => a.Id).FirstOrDefault();
+                    }
+                    <td>
+                        @if (addr is not null)
+                        {
+                            <div>@addr.FullName</div>
+                            <small>@addr.City، @addr.StreetAddress</small>
+                            <div><small>@addr.PhoneNumber</small></div>
+                        }
+                        else { <span>—</span> }
+                    </td>
                     <td>@user.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd")</td>
-                    <td><a class="mini-link" asp-controller="Users" asp-action="Edit" asp-route-id="@user.Id">إدارة
-                        الحساب</a></td>
+                    <td>
+                        <a class="mini-link" asp-controller="Users" asp-action="Edit" asp-route-id="@user.Id">إدارة الحساب</a>
+                        <a class="mini-link" asp-area="Admin" asp-controller="Orders" asp-action="Index" asp-route-customerId="@user.Id">الطلبات</a>
+                    </td>
                     </tr>
                 }
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="4" class="empty">لا يوجد عملاء حتى الآن.</td>
+                        <td colspan="5" class="empty">لا يوجد عملاء حتى الآن.</td>
                     </tr>
                 }
             </tbody>

@@ -26,6 +26,9 @@ public class OrderAddressConfiguration
             .HasMaxLength(100)
             .IsRequired();
 
+        builder.Property(x => x.StateOrGovernorate)
+            .HasMaxLength(100);
+
         builder.Property(x => x.City)
             .HasMaxLength(100)
             .IsRequired();
@@ -47,7 +50,7 @@ public class OrderAddressConfiguration
             .HasDefaultValue(false);
 
         builder.HasOne(x => x.Order)
-            .WithOne()
+            .WithOne(x => x.ShippingAddress)
             .HasForeignKey<OrderAddress>(x => x.OrderId)
             .OnDelete(DeleteBehavior.Restrict);
 

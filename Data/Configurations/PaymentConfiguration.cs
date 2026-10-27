@@ -28,6 +28,9 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(x => x.Amount)
             .HasPrecision(18, 2);
 
+        builder.Property(x => x.RequiredAmount)
+            .HasPrecision(18, 2);
+
         builder.Property(x => x.TransactionReference)
             .HasMaxLength(200);
 
@@ -35,7 +38,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .HasDefaultValue(false);
 
         builder.HasOne(x => x.Order)
-            .WithMany()
+            .WithMany(x => x.Payments)
             .HasForeignKey(x => x.OrderId)
             .OnDelete(DeleteBehavior.Restrict);
 

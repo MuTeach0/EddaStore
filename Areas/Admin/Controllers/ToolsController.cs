@@ -12,7 +12,11 @@ namespace EddaStore.Areas.Admin;
 public class ToolsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole<Guid>> roleManager) : Controller
 {
     public async Task<IActionResult> Inventory(CancellationToken ct) => View(await context.Products.AsNoTracking().Include(x => x.Category).OrderBy(x => x.StockQuantity).ToListAsync(ct));
-    public async Task<IActionResult> Customers(CancellationToken ct) => View(await userManager.Users.AsNoTracking().OrderByDescending(x => x.CreatedAt).ToListAsync(ct));
+    public async Task<IActionResult> Customers(CancellationToken ct)
+    {
+        ViewBag.Addresses = await context.Addresses.AsNoTracking().ToListAsync(ct);
+        return View(await userManager.Users.AsNoTracking().OrderByDescending(x => x.CreatedAt).ToListAsync(ct));
+    }
     public async Task<IActionResult> Roles(CancellationToken ct) => View(await roleManager.Roles.AsNoTracking().OrderBy(x => x.Name).ToListAsync(ct));
     public async Task<IActionResult> Reports(DateTime? from, DateTime? to, CancellationToken ct)
     {

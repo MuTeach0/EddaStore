@@ -92,7 +92,7 @@ public class ProductService(
         Guid id,
         CancellationToken cancellationToken = default)
     {
-        var product = await _productRepository.GetByIdAsync(
+        var product = await _productRepository.GetByIdForDeleteAsync(
             id, cancellationToken);
 
         if (product is null)

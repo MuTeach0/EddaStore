@@ -111,6 +111,9 @@ public class StoreController(IStoreCatalogService catalogService, ApplicationDbC
             return NotFound();
         }
 
+ViewData["CanonicalUrl"] = Url.Action(
+            nameof(Details), "Store", new { slug = product.Slug }, Request.Scheme);
+
         ViewBag.Reviews = await context.Reviews.AsNoTracking()
             .Where(r => r.ProductId == product.Id && r.IsApproved)
             .OrderByDescending(r => r.Id)

@@ -1,35 +1,276 @@
 @model EddaStore.Models.ViewModels.Store.CheckoutPageViewModel
+
 @{
-    ViewData["Title"] = "إتمام الطلب"; ViewData["Robots"] = "noindex, follow";
+    ViewData["Title"] = "إتمام الطلب";
+    ViewData["Robots"] = "noindex, follow";
 }
-<section class="page-head">
+
+<section class="page-head checkout-page-head">
     <div class="container">
-        <div class="breadcrumbs"><a asp-controller="Cart" asp-action="Index">السلة</a> / إتمام الطلب</div>
-        <h1>بيانات الشحن والدفع</h1>
-        <p>الدفع عند الاستلام، والشحن مجاني. راجع بيانات الاستلام وملخص الطلب قبل تأكيده.</p>
+        <nav class="breadcrumbs" aria-label="مسار الصفحة">
+            <a asp-controller="Home" asp-action="Index">الرئيسية</a>
+            <span aria-hidden="true">/</span>
+            <a asp-controller="Cart" asp-action="Index">سلة التسوق</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">إتمام الطلب</span>
+        </nav>
+
+        <h1>إتمام الطلب</h1>
+        <p>أدخل بيانات الاستلام، وراجع منتجاتك قبل إرسال الطلب.</p>
     </div>
 </section>
-<div class="container section cart-layout">
-    <form asp-action="Index" method="post" class="panel checkout-form">
-        <h2>عنوان الشحن</h2>
-        <div asp-validation-summary="ModelOnly" class="validation-message"></div><input asp-for="Input.CheckoutToken"
-                                                                                        type="hidden" />
-        <div class="form-grid"><label>الاسم المستلم<input asp-for="Input.RecipientName" /></label><label>رقم
-            الهاتف<input asp-for="Input.PhoneNumber" inputmode="tel" /></label><label>المدينة<input
-            asp-for="Input.City" /></label><label>العنوان بالتفصيل<input
-            asp-for="Input.StreetAddress" /></label><label>المبنى<input
-            asp-for="Input.Building" /></label><label>الشقة<input
-            asp-for="Input.Apartment" /></label><label>الرمز البريدي<input
-            asp-for="Input.PostalCode" /></label><label>كوبون الخصم<input asp-for="Input.CouponCode" /></label>
-        </div><button class="btn btn-primary" type="submit">تأكيد الطلب والدفع عند الاستلام</button>
-    </form>
-    <aside class="panel">
-        <h2>ملخص الطلب</h2>@foreach(var item in Model.Cart.Items){
-        <div class="summary-line"><span>@item.Name ×
-            @item.Quantity</span><strong>@item.LineTotal.ToString("N0") ج.م</strong></div>
-        }
-        <div class="summary-line"><span>الشحن</span><strong>مجاني</strong></div>
-        <div class="summary-line summary-total"><span>الإجمالي قبل
-            الخصم</span><strong>@Model.Cart.Subtotal.ToString("N0") ج.م</strong></div>
-        </aside>
+
+<div class="container section checkout-page">
+    <div class="checkout-layout">
+
+        <main class="panel checkout-form-panel">
+            <header class="checkout-panel-header">
+                <span class="checkout-step">الخطوة الأخيرة</span>
+                <h2>بيانات الاستلام</h2>
+                <p>تأكد من صحة رقم الهاتف والعنوان لتسهيل توصيل طلبك.</p>
+            </header>
+
+            <form asp-controller="Checkout" asp-action="Index" method="post" class="checkout-form">
+
+                <div asp-validation-summary="ModelOnly" class="validation-message" role="alert"></div>
+
+                <input asp-for="Input.CheckoutToken" type="hidden" />
+
+                @if (Model.SavedAddresses.Any())
+                {
+                    <section class="checkout-form-section">
+                        <h3>العناوين المحفوظة</h3>
+                        <div class="checkout-fields-grid">
+                            @foreach (var savedAddress in Model.SavedAddresses)
+                            {
+                                var isChecked = Model.Input.SelectedAddressId == savedAddress.Id;
+                                <label class="checkout-field checkout-field-full saved-address-option">
+                                    <input type="radio"
+                                           name="Input.SelectedAddressId"
+                                           value="@savedAddress.Id"
+                                           data-full-name="@savedAddress.FullName"
+                                           data-phone="@savedAddress.PhoneNumber"
+                                           data-city="@savedAddress.City"
+                                           data-state="@savedAddress.StateOrGovernorate"
+                                           data-street="@savedAddress.StreetAddress"
+                                           data-building="@savedAddress.Building"
+                                           data-apartment="@savedAddress.Apartment"
+                                           data-postal="@savedAddress.PostalCode"
+                                           checked="@isChecked" />
+                                    <span>
+                                        <strong>@savedAddress.FullName</strong>
+                                        @if (savedAddress.IsDefault) { <small>(افتراضي)</small> }
+                                        <br />
+                                        @savedAddress.StreetAddress @savedAddress.Building @savedAddress.Apartment،
+                                        @(string.IsNullOrWhiteSpace(savedAddress.StateOrGovernorate) ? savedAddress.City : $"{savedAddress.StateOrGovernorate} / {savedAddress.City}")،
+                                        @savedAddress.Country
+                                        <br />
+                                        هاتف: @savedAddress.PhoneNumber
+                                        @if (!string.IsNullOrWhiteSpace(savedAddress.PostalCode)) { <span>، الرمز البريدي: @savedAddress.PostalCode</span> }
+                                    </span>
+                                </label>
+                            }
+                            <label class="checkout-field checkout-field-full saved-address-option">
+                                <input type="radio"
+                                       name="Input.SelectedAddressId"
+                                       value=""
+                                       checked="@(Model.Input.SelectedAddressId == null)" />
+                                <span><strong>إضافة عنوان جديد</strong></span>
+                            </label>
+                        </div>
+                        <small>اختر عنوانًا محفوظًا أو أضف عنوانًا جديدًا. سيتم حفظ نسخة من عنوان الشحن مع الطلب.</small>
+                    </section>
+                }
+                else
+                {
+                    <input type="hidden" name="Input.SelectedAddressId" value="" />
+                }
+
+                <section class="checkout-form-section">
+                    <h3>معلومات المستلم</h3>
+
+                    <div class="checkout-fields-grid">
+                        <div class="checkout-field checkout-field-full">
+                            <label asp-for="Input.RecipientName">الاسم بالكامل</label>
+                            <input asp-for="Input.RecipientName" autocomplete="name" placeholder="اكتب اسم المستلم"
+                                   aria-describedby="recipient-name-error" />
+                            <span asp-validation-for="Input.RecipientName" id="recipient-name-error"
+                                  class="field-validation"></span>
+                        </div>
+
+                        <div class="checkout-field checkout-field-full">
+                            <label asp-for="Input.PhoneNumber">رقم الهاتف</label>
+                            <input asp-for="Input.PhoneNumber" type="tel" inputmode="tel" autocomplete="tel"
+                                   placeholder="رقم هاتف متاح للتواصل" />
+                            <span asp-validation-for="Input.PhoneNumber" class="field-validation"></span>
+                            <small>اكتب رقمًا صحيحًا حتى نتمكن من التواصل معك بخصوص الطلب.</small>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="checkout-form-section">
+                    <h3>عنوان التوصيل</h3>
+
+                    <div class="checkout-fields-grid">
+                        <div class="checkout-field">
+                            <label asp-for="Input.City">المحافظة / المنطقة</label>
+                            <input asp-for="Input.City" autocomplete="address-level1"
+                                   placeholder="مثال: الجيزة، الدقي" />
+                            <span asp-validation-for="Input.City" class="field-validation"></span>
+                        </div>
+
+                        <div class="checkout-field">
+                            <label asp-for="Input.PostalCode">الرمز البريدي <span>(اختياري إذا كان مسموحًا في
+                                النموذج)</span></label>
+                                <input asp-for="Input.PostalCode" autocomplete="postal-code" placeholder="الرمز البريدي" />
+                                <span asp-validation-for="Input.PostalCode" class="field-validation"></span>
+                            </div>
+
+                            <div class="checkout-field checkout-field-full">
+                                <label asp-for="Input.StreetAddress">العنوان بالتفصيل</label>
+                                <input asp-for="Input.StreetAddress" autocomplete="street-address"
+                                       placeholder="اسم الشارع وأقرب علامة مميزة" />
+                                <span asp-validation-for="Input.StreetAddress" class="field-validation"></span>
+                            </div>
+
+                            <div class="checkout-field">
+                                <label asp-for="Input.Building">رقم المبنى</label>
+                                <input asp-for="Input.Building" placeholder="رقم المبنى" />
+                                <span asp-validation-for="Input.Building" class="field-validation"></span>
+                            </div>
+
+                            <div class="checkout-field">
+                                <label asp-for="Input.Apartment">رقم الشقة</label>
+                                <input asp-for="Input.Apartment" placeholder="رقم الشقة أو الدور" />
+                                <span asp-validation-for="Input.Apartment" class="field-validation"></span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="checkout-form-section">
+                        <h3>كوبون الخصم</h3>
+
+                        <div class="checkout-field">
+                            <label asp-for="Input.CouponCode">كود الخصم</label>
+                            <input asp-for="Input.CouponCode" autocomplete="off" placeholder="أدخل الكوبون إن وجد" />
+                            <span asp-validation-for="Input.CouponCode" class="field-validation"></span>
+                        </div>
+                    </section>
+
+                    <div class="checkout-shipping-notice">
+                        <span class="checkout-notice-icon" aria-hidden="true">i</span>
+                        <div>
+                            <strong>بخصوص تكلفة الشحن</strong>
+                            <p>
+                                تكلفة الشحن غير مشمولة في إجمالي المنتجات. سيتم تأكيد توفر المنتجات وتكلفة الشحن وترتيب الدفع
+                                عبر واتساب بعد إرسال الطلب.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary checkout-submit-btn" type="submit">
+                        إرسال الطلب — سيتم تأكيد الدفع عبر واتساب
+                        <span aria-hidden="true">←</span>
+                    </button>
+
+                    <p class="checkout-submit-note">
+                        راجع بياناتك قبل الإرسال. سيتم توضيح تكلفة الشحن بشكل منفصل.
+                    </p>
+                </form>
+            </main>
+
+            <aside class="panel checkout-summary">
+                <header class="checkout-summary-header">
+                    <h2>ملخص الطلب</h2>
+                    <a asp-controller="Cart" asp-action="Index">تعديل السلة</a>
+                </header>
+
+                <div class="checkout-summary-items">
+                    @foreach (var item in Model.Cart.Items)
+                    {
+                        <article class="checkout-summary-item">
+                            <div class="checkout-summary-product">
+                                <strong>@item.Name</strong>
+                                <span>الكمية: @item.Quantity</span>
+                            </div>
+
+                            <strong class="checkout-summary-price">
+                                @item.LineTotal.ToString("N2") ج.م
+                            </strong>
+                        </article>
+                    }
+                </div>
+
+                <div class="checkout-summary-totals">
+                    <div class="checkout-total-row">
+                        <span>عدد القطع</span>
+                        <strong>@Model.Cart.Items.Sum(x => x.Quantity)</strong>
+                    </div>
+
+                    <div class="checkout-total-row">
+                        <span>إجمالي المنتجات</span>
+                        <strong>@Model.Cart.Subtotal.ToString("N2") ج.م</strong>
+                    </div>
+
+                    <div class="checkout-total-row checkout-shipping-row">
+                        <span>الشحن</span>
+                        <span>يُحدد عبر واتساب</span>
+                    </div>
+
+                    <div class="checkout-total-final">
+                        <span>إجمالي المنتجات قبل الشحن والخصم</span>
+                        <strong>@Model.Cart.Subtotal.ToString("N2") ج.م</strong>
+                    </div>
+                </div>
+
+                <div class="checkout-summary-note">
+                    <span aria-hidden="true">✓</span>
+                    <p>سيتم تأكيد توفر المنتجات وتكلفة الشحن وترتيب الدفع عبر واتساب. تكلفة الشحن غير مشمولة في المبلغ المعروض.</p>
+                </div>
+            </aside>
+
+        </div>
     </div>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+        <script>
+            (function () {
+                var radios = document.querySelectorAll('input[name="Input.SelectedAddressId"]');
+                var recipient = document.getElementById('Input_RecipientName');
+                var phone = document.getElementById('Input_PhoneNumber');
+                var city = document.getElementById('Input_City');
+                var street = document.getElementById('Input_StreetAddress');
+                var building = document.getElementById('Input_Building');
+                var apartment = document.getElementById('Input_Apartment');
+                var postal = document.getElementById('Input_PostalCode');
+
+                function fillFromRadio(radio) {
+                    if (!radio || !radio.value) {
+                        if (recipient) recipient.value = '';
+                        if (phone) phone.value = '';
+                        if (city) city.value = '';
+                        if (street) street.value = '';
+                        if (building) building.value = '';
+                        if (apartment) apartment.value = '';
+                        if (postal) postal.value = '';
+                        return;
+                    }
+                    if (recipient) recipient.value = radio.dataset.fullName || '';
+                    if (phone) phone.value = radio.dataset.phone || '';
+                    if (city) city.value = radio.dataset.city || '';
+                    if (street) street.value = radio.dataset.street || '';
+                    if (building) building.value = radio.dataset.building || '';
+                    if (apartment) apartment.value = radio.dataset.apartment || '';
+                    if (postal) postal.value = radio.dataset.postal || '';
+                }
+
+                radios.forEach(function (radio) {
+                    radio.addEventListener('change', function () { fillFromRadio(radio); });
+                });
+
+                var checked = document.querySelector('input[name="Input.SelectedAddressId"]:checked');
+                if (checked && checked.value) fillFromRadio(checked);
+            })();
+        </script>
+    }

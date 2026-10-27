@@ -84,7 +84,7 @@ public class ProductsController(
             await _productService.CreateAsync(
                 product, cancellationToken);
 
-            await _productImageService.AddAsync(product.Id, model.NewImages, cancellationToken);
+            await _productImageService.AddAsync(product.Id, model.NewImages ?? Array.Empty<IFormFile>(), ParsePrimaryNewIndex(model.PrimaryImageKey), cancellationToken);
 
             TempData["Success"] = "تمت إضافة المنتج بنجاح.";
 
@@ -122,8 +122,11 @@ public class ProductsController(
             SKU = product.SKU,
             IsActive = product.IsActive,
             CategoryId = product.CategoryId,
-            BrandId = product.BrandId
-            ,ExistingImages = product.Images.OrderBy(x => x.SortOrder).ToList()
+            BrandId = product.BrandId,
+            PrimaryImageKey = product.Images.OrderByDescending(x => x.IsPrimary).ThenBy(x => x.SortOrder).FirstOrDefault() is { } primaryImage
+                ? $"existing:{primaryImage.Id}"
+                : null,
+            ExistingImages = product.Images.OrderBy(x => x.SortOrder).ToList()
         };
 
         await LoadFormOptionsAsync(model, cancellationToken);
@@ -146,6 +149,8 @@ public class ProductsController(
 
         if (!ModelState.IsValid)
         {
+            model.ExistingImages = (await _productImageService.GetAsync(model.Id, cancellationToken)).OrderBy(x => x.SortOrder).ToList();
+
             await LoadFormOptionsAsync(model, cancellationToken);
             return View(model);
         }
@@ -170,7 +175,7 @@ public class ProductsController(
             await _productService.UpdateAsync(
                 product, cancellationToken);
 
-            await _productImageService.AddAsync(product.Id, model.NewImages, cancellationToken);
+            await _productImageService.ApplyEditAsync(product.Id, model.NewImages ?? Array.Empty<IFormFile>(), model.DeletedImageIds ?? new List<Guid>(), ParsePrimaryExistingId(model.PrimaryImageKey), ParsePrimaryNewIndex(model.PrimaryImageKey), cancellationToken);
 
             TempData["Success"] = "تم تعديل المنتج بنجاح.";
 
@@ -184,6 +189,8 @@ public class ProductsController(
         {
             ModelState.AddModelError(string.Empty, ex.Message);
         }
+
+        model.ExistingImages = (await _productImageService.GetAsync(model.Id, cancellationToken)).OrderBy(x => x.SortOrder).ToList();
 
         await LoadFormOptionsAsync(model, cancellationToken);
         return View(model);
@@ -224,6 +231,28 @@ public class ProductsController(
         try { await _productImageService.DeleteAsync(productId, imageId, cancellationToken); TempData["Success"] = "تم حذف الصورة."; }
         catch (KeyNotFoundException) { return NotFound(); }
         return RedirectToAction(nameof(Edit), new { id = productId });
+    }
+
+    private static int? ParsePrimaryNewIndex(string? primaryImageKey)
+    {
+        if (string.IsNullOrWhiteSpace(primaryImageKey) ||
+            !primaryImageKey.StartsWith("new:", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        return int.TryParse(primaryImageKey.AsSpan(4), out var index)
+            ? index
+            : null;
+    }
+
+    private static Guid? ParsePrimaryExistingId(string? primaryImageKey)
+    {
+        if (string.IsNullOrWhiteSpace(primaryImageKey) ||
+            !primaryImageKey.StartsWith("existing:", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        return Guid.TryParse(primaryImageKey.AsSpan(9), out var id)
+            ? id
+            : null;
     }
 
     private void ValidateComparisonPrice(

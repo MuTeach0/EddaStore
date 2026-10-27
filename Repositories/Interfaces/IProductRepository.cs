@@ -12,6 +12,10 @@ public interface IProductRepository
         Guid id,
         CancellationToken cancellationToken = default);
 
+    Task<Product?> GetByIdForDeleteAsync(
+        Guid id,
+        CancellationToken cancellationToken = default);
+
     Task<Product?> GetBySlugAsync(
         string slug,
         CancellationToken cancellationToken = default);

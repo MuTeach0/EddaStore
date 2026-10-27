@@ -13,6 +13,11 @@ public class ProductRepository(ApplicationDbContext context)
     {
         return await DbSet.Include(x => x.Images).FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
+
+    public async Task<Product?> GetByIdForDeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await DbSet.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
     public async Task<Product?> GetBySlugAsync(
         string slug,
         CancellationToken cancellationToken = default)

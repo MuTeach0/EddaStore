@@ -1269,3 +1269,21 @@
     font-size: 1.25rem;
   }
 }
+@media print {
+    @page { size: A4; margin: 12mm; }
+    .no-print { display: none !important; }
+    body * { visibility: hidden !important; }
+    .invoice-print, .invoice-print * { visibility: visible !important; }
+    .invoice-print {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none;
+    }
+    .invoice-print table { width: 100%; border-collapse: collapse; }
+    .invoice-print th, .invoice-print td { border: 1px solid #888; padding: 6px; }
+    .invoice-print thead { display: table-header-group; }
+    .invoice-print tr { page-break-inside: avoid; }
+    .invoice-print * { background: transparent !important; color: #000 !important; }
+}

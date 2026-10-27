@@ -1,0 +1,69 @@
+@model EddaStore.Models.Invoices.Invoice
+@{
+    ViewData["Title"] = $"فاتورة {Model.InvoiceNumber}";
+    var order = ViewBag.Order as EddaStore.Models.Orders.Order;
+    var payment = ViewBag.Payment as EddaStore.Models.Payments.Payment;
+    var customer = ViewBag.Customer as EddaStore.Models.Identity.ApplicationUser;
+    var paidAmount = order?.Payments?.Where(p => p.Status == EddaStore.Constants.PaymentStatuses.Paid).Sum(p => p.Amount) ?? 0m;
+    var finalTotal = order?.TotalAmount ?? Model.TotalAmount;
+    var remaining = finalTotal - paidAmount;
+    if (remaining < 0) remaining = 0;
+    var address = order?.ShippingAddress;
+    var paymentStatus = paidAmount >= finalTotal && finalTotal > 0
+        ? "مدفوع"
+        : paidAmount > 0
+            ? "مدفوع جزئياً"
+            : "بانتظار الدفع";
+}
+<section class="admin-page">
+    <div class="admin-page-header">
+        <div><h2>فاتورة @Model.InvoiceNumber</h2><p>طلب @(order?.OrderNumber)</p></div>
+        <div class="no-print" style="display:flex;gap:8px;align-items:center;">
+            <button type="button" class="admin-secondary-btn" onclick="window.print()">🖨️ طباعة الفاتورة</button>
+            <a asp-action="Details" asp-route-id="@Model.OrderId" class="admin-secondary-btn">العودة للطلب</a>
+        </div>
+    </div>
+    <section class="admin-table-card invoice-print">
+        <div class="admin-total">
+            <div>رقم الفاتورة: @Model.InvoiceNumber</div>
+            <div>تاريخ الإصدار: @Model.IssuedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</div>
+            <div>رقم الطلب: @(order?.OrderNumber ?? "—")</div>
+            <div>العميل: @(customer is null ? "—" : $"{customer.FirstName} {customer.LastName}".Trim())</div>
+            <div>البريد: @(customer?.Email ?? "—")</div>
+            <div>الهاتف: @(customer?.PhoneNumber ?? address?.PhoneNumber ?? "—")</div>
+        </div>
+        <h3>عنوان الشحن (snapshot)</h3>
+        @if (address is not null)
+        {
+            <div class="admin-total">
+                <div>@address.RecipientName</div>
+                <div>@address.StreetAddress @address.Building @address.Apartment</div>
+                <div>@(string.IsNullOrWhiteSpace(address.StateOrGovernorate) ? address.City : $"{address.StateOrGovernorate} / {address.City}")، @address.Country</div>
+                <div>هاتف: @address.PhoneNumber</div>
+                @if (!string.IsNullOrWhiteSpace(address.PostalCode)) { <div>الرمز البريدي: @address.PostalCode</div> }
+            </div>
+        }
+        else { <div>—</div> }
+        <table class="admin-table">
+            <thead><tr><th>المنتج</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr><td>@item.ProductName <small>@item.SKU</small></td><td>@item.Quantity</td><td>@item.UnitPrice.ToString("N2")</td><td>@item.LineTotal.ToString("N2")</td></tr>
+            }
+            </tbody>
+        </table>
+        <div class="admin-total">
+            <div>إجمالي المنتجات: @Model.Subtotal.ToString("N2") @Model.Currency</div>
+            @if (Model.DiscountAmount > 0) { <div>الخصم: -@Model.DiscountAmount.ToString("N2") @Model.Currency</div> }
+            <div>الشحن: @(order?.ShippingCost.ToString("N2")) @Model.Currency</div>
+            <div><strong>الإجمالي Final: @finalTotal.ToString("N2") @Model.Currency</strong></div>
+            @if (paidAmount > 0 || payment is not null)
+            {
+                <div>المدفوع: @paidAmount.ToString("N2") @Model.Currency</div>
+                <div>المتبقي: @remaining.ToString("N2") @Model.Currency</div>
+                <div>حالة السداد: @paymentStatus</div>
+            }
+        </div>
+    </section>
+</section>

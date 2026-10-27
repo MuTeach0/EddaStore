@@ -1,9 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using EddaStore.Models.Customers;
 
 namespace EddaStore.Models.ViewModels.Store;
 
 public class CheckoutInputViewModel
 {
+    public Guid? SelectedAddressId { get; set; }
+
     [Required, StringLength(200)] public string RecipientName { get; set; } = string.Empty;
     [Required, StringLength(30)] public string PhoneNumber { get; set; } = string.Empty;
     [Required, StringLength(100)] public string City { get; set; } = string.Empty;
@@ -19,4 +22,5 @@ public class CheckoutPageViewModel
 {
     public CheckoutInputViewModel Input { get; set; } = new();
     public CartViewModel Cart { get; set; } = new();
+    public List<Address> SavedAddresses { get; set; } = new();
 }

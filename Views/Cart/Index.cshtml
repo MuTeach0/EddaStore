@@ -1,4 +1,4 @@
-@model EddaStore.Models.ViewModels.Store.CartViewModel
+@* @model EddaStore.Models.ViewModels.Store.CartViewModel
 @{
     ViewData["Title"] = "سلة التسوق"; ViewData["Robots"] = "noindex, follow";
 }
@@ -53,4 +53,183 @@
                 </aside>
             </div>
         }
+    </div> *@
+
+
+    
+@model EddaStore.Models.ViewModels.Store.CartViewModel
+
+@{
+    ViewData["Title"] = "سلة التسوق";
+    ViewData["Robots"] = "noindex, follow";
+}
+
+<section class="page-head cart-page-head">
+    <div class="container">
+        <nav class="breadcrumbs" aria-label="مسار الصفحة">
+            <a asp-controller="Home" asp-action="Index">الرئيسية</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">سلة التسوق</span>
+        </nav>
+
+        <h1>سلة التسوق</h1>
+        <p>راجع منتجاتك وكمياتها قبل الانتقال إلى إتمام الطلب.</p>
     </div>
+</section>
+
+<div class="container section cart-page">
+    @if (Model.Items == null || !Model.Items.Any())
+    {
+        <section class="cart-empty panel">
+            <div class="cart-empty-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.5L21 8H6" stroke="currentColor"
+                          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="10" cy="20" r="1" fill="currentColor" />
+                    <circle cx="18" cy="20" r="1" fill="currentColor" />
+                </svg>
+            </div>
+
+            <h2>سلتك لسه فاضية</h2>
+            <p>اكتشف منتجاتنا واختار المنتجات المناسبة ليك.</p>
+
+            <a asp-controller="Store" asp-action="Index" class="btn btn-primary">
+                تصفح المنتجات
+            </a>
+        </section>
+    }
+    else
+    {
+        <div class="cart-layout cart-layout-v2">
+            <section class="panel cart-products">
+                <header class="cart-section-header">
+                    <div>
+                        <h2>منتجاتك</h2>
+                        <p>راجع تفاصيل كل منتج قبل إتمام الطلب.</p>
+                    </div>
+
+                    <span class="cart-items-count">
+                        @Model.Items.Count() @(Model.Items.Count() == 1 ? "منتج" : "منتجات")
+                    </span>
+                </header>
+
+                <div class="cart-items-list">
+                    @foreach (var item in Model.Items)
+                    {
+                        <article class="cart-item cart-item-v2">
+                            <div class="cart-product-image">
+                                @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" alt="@item.Name" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="cart-image-placeholder" aria-label="لا توجد صورة للمنتج">
+                                        <span aria-hidden="true">▧</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="cart-product-details">
+                                <h3>@item.Name</h3>
+
+                                <p class="cart-unit-price">
+                                    @item.UnitPrice.ToString("N2") ج.م
+                                    <span>للوحدة</span>
+                                </p>
+
+                                <form asp-controller="Cart" asp-action="Update" method="post" class="cart-quantity-form">
+                                    <input type="hidden" name="productId" value="@item.ProductId" />
+
+                                    <label for="quantity-@item.ProductId">
+                                        الكمية
+                                    </label>
+
+                                    <div class="cart-quantity-controls">
+                                        <input id="quantity-@item.ProductId" name="quantity" type="number"
+                                               value="@item.Quantity" min="1" max="@item.AvailableQuantity" required
+                                               inputmode="numeric" />
+
+                                        <button type="submit" class="btn btn-secondary cart-update-btn">
+                                            تحديث
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="cart-product-actions">
+                                <div class="cart-line-total">
+                                    <span>الإجمالي</span>
+                                    <strong>
+                                        @item.LineTotal.ToString("N2") ج.م
+                                    </strong>
+                                </div>
+
+                                <form asp-controller="Cart" asp-action="Remove" method="post"
+                                      onsubmit="return confirm('هل تريد حذف هذا المنتج من السلة؟');">
+                                    <input type="hidden" name="productId" value="@item.ProductId" />
+
+                                    <button type="submit" class="cart-remove-btn">
+                                        <span aria-hidden="true">×</span>
+                                        حذف المنتج
+                                    </button>
+                                </form>
+                            </div>
+                        </article>
+                    }
+                </div>
+
+                <footer class="cart-continue-shopping">
+                    <a asp-controller="Store" asp-action="Index">
+                        <span aria-hidden="true">←</span>
+                        متابعة التسوق
+                    </a>
+                </footer>
+            </section>
+
+            <aside class="panel cart-summary">
+                <h2>ملخص الطلب</h2>
+                <p class="cart-summary-caption">
+                    مراجعة التكلفة قبل إتمام الشراء.
+                </p>
+
+                <div class="cart-summary-line">
+                    <span>عدد المنتجات</span>
+                    <strong>@Model.Items.Sum(x => x.Quantity)</strong>
+                </div>
+
+                <div class="cart-summary-line">
+                    <span>الإجمالي الفرعي</span>
+                    <strong>@Model.Subtotal.ToString("N2") ج.م</strong>
+                </div>
+
+                <div class="cart-summary-line cart-shipping-line">
+                    <span>تكلفة الشحن</span>
+                    <span class="cart-shipping-note">
+                        تُحدد عند إتمام الطلب
+                    </span>
+                </div>
+
+                <div class="cart-summary-total">
+                    <span>الإجمالي قبل الشحن</span>
+                    <strong>@Model.Subtotal.ToString("N2") ج.م</strong>
+                </div>
+
+                <p class="cart-shipping-disclaimer">
+                    تكلفة الشحن غير مشمولة في المبلغ أعلاه، وسيتم توضيحها
+                    قبل تأكيد الطلب.
+                </p>
+
+                <a class="btn btn-primary btn-block cart-checkout-btn" asp-controller="Checkout" asp-action="Index">
+                    متابعة لإتمام الطلب
+                    <span aria-hidden="true">←</span>
+                </a>
+
+                <div class="cart-summary-trust">
+                    <span aria-hidden="true">✓</span>
+                    راجع بيانات الطلب وتكلفة الشحن قبل التأكيد.
+                </div>
+            </aside>
+        </div>
+    }
+</div>

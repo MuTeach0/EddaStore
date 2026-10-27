@@ -10,4 +10,6 @@ public class ProductEditViewModel : ProductCreateViewModel
     public Guid Id { get; set; }
 
     public IReadOnlyList<ProductImage> ExistingImages { get; set; } = Array.Empty<ProductImage>();
+
+    public List<Guid> DeletedImageIds { get; set; } = new();
 }

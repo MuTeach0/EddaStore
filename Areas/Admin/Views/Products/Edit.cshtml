@@ -54,9 +54,12 @@
             </section>
 
             <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="mb-5 text-lg font-black text-slate-900">إضافة صور</h2>
-                <input asp-for="NewImages" type="file" multiple accept="image/jpeg,image/png,image/webp" class="w-full rounded-xl border border-slate-300 px-4 py-3" />
+                <h2 class="mb-5 text-lg font-black text-slate-900">صور المنتج</h2>
+                <label asp-for="NewImages" class="mb-2 block text-sm font-bold text-slate-700"></label>
+                <input id="newImagesInput" asp-for="NewImages" type="file" multiple accept="image/jpeg,image/png,image/webp" class="w-full rounded-xl border border-slate-300 px-4 py-3" />
                 <span class="mt-1 block text-sm text-slate-500">JPG أو PNG أو WEBP، وبحد أقصى 5MB للصورة.</span>
+                <div id="newImageValidationError" class="mt-2 hidden text-sm text-red-600"></div>
+                <div id="newImagePreviewGrid" class="product-image-preview-grid"></div>
             </section>
 
             @if (Model.ExistingImages.Any())
@@ -68,13 +71,25 @@
                         {
                             <div class="product-image-card">
                                 <img src="@image.ImageUrl" alt="@(image.AltText ?? Model.Name)" />
-                                @if (image.IsPrimary) { <strong>الصورة الرئيسية</strong> }
-                                <div><form asp-action="SetPrimaryImage" method="post"><input type="hidden" name="productId" value="@Model.Id"/><input type="hidden" name="imageId" value="@image.Id"/><button type="submit">تعيين رئيسية</button></form><form asp-action="DeleteImage" method="post"><input type="hidden" name="productId" value="@Model.Id"/><input type="hidden" name="imageId" value="@image.Id"/><button type="submit">حذف</button></form></div>
+                                @if (image.IsPrimary)
+                                {
+                                    <span class="product-image-badge">الصورة الرئيسية</span>
+                                }
+                                <label class="mt-2 flex items-center gap-2">
+                                    <input type="radio" name="primaryImageRadio" value="existing:@image.Id" @(Model.PrimaryImageKey == $"existing:{image.Id}" ? "checked" : "") />
+                                    تعيين رئيسية
+                                </label>
+                                <label class="mt-2 flex items-center gap-2">
+                                    <input type="checkbox" name="DeletedImageIds" value="@image.Id" />
+                                    حذف
+                                </label>
                             </div>
                         }
                     </div>
                 </section>
             }
+
+            <input type="hidden" asp-for="PrimaryImageKey" id="primaryImageKey" />
 
             <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h2 class="mb-5 text-lg font-black text-slate-900">السعر والمخزون</h2>
@@ -155,4 +170,111 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const input = document.getElementById('newImagesInput');
+            const grid = document.getElementById('newImagePreviewGrid');
+            const primaryInput = document.getElementById('primaryImageKey');
+            const errorBox = document.getElementById('newImageValidationError');
+            const maxBytes = 5 * 1024 * 1024;
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            let selectedFiles = [];
+
+            function showError(message) {
+                if (!errorBox) return;
+                errorBox.textContent = message || '';
+                errorBox.classList.toggle('hidden', !message);
+            }
+
+            function syncInput() {
+                const transfer = new DataTransfer();
+                selectedFiles.forEach(function (file) { transfer.items.add(file); });
+                input.files = transfer.files;
+            }
+
+            function syncRadios() {
+                document.querySelectorAll('input[name="primaryImageRadio"]').forEach(function (radio) {
+                    radio.addEventListener('change', function () {
+                        primaryInput.value = this.value;
+                    });
+                });
+            }
+
+            function render() {
+                grid.innerHTML = '';
+                selectedFiles.forEach(function (file, index) {
+                    const url = URL.createObjectURL(file);
+                    const card = document.createElement('div');
+                    card.className = 'product-image-preview-card';
+
+                    const image = document.createElement('img');
+                    image.src = url;
+                    image.alt = file.name;
+                    card.appendChild(image);
+
+                    const value = 'new:' + index;
+                    if (primaryInput.value === value) {
+                        const badge = document.createElement('span');
+                        badge.className = 'product-image-badge';
+                        badge.textContent = 'الصورة الرئيسية (جديدة)';
+                        card.appendChild(badge);
+                    }
+
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = 'primaryImageRadio';
+                    radio.value = value;
+                    radio.checked = primaryInput.value === value;
+                    radio.addEventListener('change', function () {
+                        primaryInput.value = this.value;
+                        render();
+                    });
+                    card.appendChild(radio);
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'product-image-remove';
+                    removeButton.textContent = 'إزالة';
+                    removeButton.addEventListener('click', function () {
+                        selectedFiles.splice(index, 1);
+                        syncInput();
+                        if (selectedFiles.length === 0) {
+                            // keep current selection if still valid
+                        } else {
+                            const current = parseInt((primaryInput.value || '').replace('new:', ''), 10);
+                            if (!isNaN(current) && current >= selectedFiles.length) {
+                                primaryInput.value = '';
+                            }
+                        }
+                        render();
+                    });
+                    card.appendChild(removeButton);
+
+                    grid.appendChild(card);
+                });
+            }
+
+            input.addEventListener('change', function () {
+                showError('');
+                const chosen = Array.from(input.files || []);
+                const valid = [];
+                let hasError = false;
+                chosen.forEach(function (file) {
+                    if (file.size === 0 || file.size > maxBytes || !allowedTypes.includes(file.type)) {
+                        hasError = true;
+                    } else {
+                        valid.push(file);
+                    }
+                });
+                if (hasError) {
+                    showError('يجب رفع صورة JPG أو PNG أو WEBP بحجم لا يتجاوز 5MB.');
+                }
+                selectedFiles = valid;
+                syncInput();
+                render();
+            });
+
+            syncRadios();
+        })();
+    </script>
 }

@@ -105,13 +105,7 @@ public class ApplicationDbContext(
             .HasForeignKey(x => x.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Invoice: one invoice per order in the initial design.
-        builder.Entity<Invoice>()
-            .HasOne(x => x.Order)
-            .WithOne()
-            .HasForeignKey<Invoice>(x => x.OrderId)
-            .OnDelete(DeleteBehavior.Restrict);
-
+        // Invoice items: one invoice has many line items.
         builder.Entity<Invoice>()
             .HasMany(x => x.Items)
             .WithOne(x => x.Invoice)

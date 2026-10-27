@@ -1,3 +1,4 @@
+using EddaStore.Data;
 using EddaStore.Models.Identity;
 using EddaStore.Models.ViewModels.Admin.Users;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +11,7 @@ namespace EddaStore.Areas.Admin.Controllers;
 
 [Area("Admin")]
 [Authorize(Roles = "Admin")]
-public class UsersController(UserManager<ApplicationUser> userManager) : Controller
+public class UsersController(UserManager<ApplicationUser> userManager, ApplicationDbContext context) : Controller
 {
     public async Task<IActionResult> Index(CancellationToken ct) =>
         View(await userManager.Users.OrderByDescending(x => x.CreatedAt).ToListAsync(ct));
@@ -56,10 +57,11 @@ public class UsersController(UserManager<ApplicationUser> userManager) : Control
     }
 
     [HttpGet]
-    public async Task<IActionResult> Edit(Guid id)
+    public async Task<IActionResult> Edit(Guid id, CancellationToken ct)
     {
         var user = await userManager.FindByIdAsync(id.ToString());
         if (user is null) return NotFound();
+        ViewBag.Addresses = await context.Addresses.AsNoTracking().Where(x => x.CustomerId == user.Id).ToListAsync(ct);
         return View("Form", new UserEditViewModel
         {
             Id = user.Id,

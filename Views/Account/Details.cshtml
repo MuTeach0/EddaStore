@@ -1,6 +1,14 @@
 @model EddaStore.Models.Orders.Order
+@using EddaStore.Models.Payments
+@using EddaStore.Models.Shipping
+@using EddaStore.Models.Invoices
+@using EddaStore.Constants
 @{
     ViewData["Title"] = "تفاصيل الطلب"; ViewData["Robots"] = "noindex, follow";
+    var payment = Model.Payments?.FirstOrDefault();
+    var shipment = Model.Shipment;
+    var invoice = Model.Invoice;
+    var address = Model.ShippingAddress;
 }
 <section class="account-page">
     <div class="container account-wrap">
@@ -9,7 +17,7 @@
             <header class="account-page-heading">
                 <div><span class="auth-eyebrow">تفاصيل مشترياتك</span>
                     <h1>طلب رقم @Model.OrderNumber</h1>
-                    <p>راجع المنتجات الموجودة في الطلب والإجمالي الخاص به.</p>
+                    <p>راجع المنتجات والأسعار. سيتم التواصل معك عبر واتساب لتأكيد توفر المنتجات وتكلفة الشحن وترتيب الدفع.</p>
                 </div>
                 <div class="order-detail-status"><small>حالة الطلب</small><strong>@(Model.Status switch
                     {
@@ -50,16 +58,73 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="order-total-box"><span>إجمالي الطلب</span><strong>@Model.TotalAmount.ToString("N0")
-                        <small>ج.م</small></strong></div>
+                    <div class="order-total-box">
+                        <div>إجمالي المنتجات: @Model.Subtotal.ToString("N2") @Model.Currency</div>
+                        @if (Model.DiscountAmount > 0)
+                        {
+                            <div>الخصم: -@Model.DiscountAmount.ToString("N2") @Model.Currency</div>
+                        }
+                        <div>تكلفة الشحن: @Model.ShippingCost.ToString("N2") @Model.Currency</div>
+                        <div><strong>الإجمالي النهائي: @Model.TotalAmount.ToString("N2") @Model.Currency</strong></div>
+                    </div>
                     </section>
                     <aside class="order-detail-aside">
                         <div class="order-aside-icon">✓</div>
                         <h2>تفاصيل الطلب</h2>
-                        <p>يمكنك مراجعة المنتجات والكميات والأسعار المسجلة في هذا الطلب من هنا.</p>
-                        <div class="order-aside-divider"></div><a class="account-primary-button account-button-link"
-                                                                  asp-action="Index">العودة إلى حسابي <span aria-hidden="true">←</span></a><a class="order-back-link"
-                                                                                                    asp-controller="Store" asp-action="Index">مواصلة التسوق</a>
+                        @if (address is not null)
+                        {
+                            <p><strong>عنوان الشحن:</strong> @address.RecipientName — @address.StreetAddress @address.Building @address.Apartment، @address.City، @address.Country</p>
+                            <p><strong>الهاتف:</strong> @address.PhoneNumber</p>
+                        }
+                        <div class="order-aside-divider"></div>
+                        <p><strong>حالة الدفع:</strong> @(payment?.Status switch
+                        {
+                            PaymentStatuses.Paid => "مدفوع",
+                            PaymentStatuses.PartiallyPaid => "مدفوع جزئياً",
+                            PaymentStatuses.Pending => "بانتظار الدفع",
+                            PaymentStatuses.Cancelled => "ملغي",
+                            _ => payment?.Status ?? "—"
+                        })</p>
+                        @if (payment is not null)
+                        {
+                            <p>المبلغ المطلوب: @payment.RequiredAmount.ToString("N2") @Model.Currency</p>
+                            <p>المبلغ المستلم: @payment.Amount.ToString("N2") @Model.Currency</p>
+                            <p>المتبقي: @((payment.RequiredAmount - payment.Amount) > 0 ? (payment.RequiredAmount - payment.Amount).ToString("N2") : "0.00") @Model.Currency</p>
+                        }
+                        @if (shipment is not null)
+                        {
+                            <p><strong>شركة الشحن:</strong> @shipment.Carrier</p>
+                            <p><strong>رقم التتبع:</strong> @(shipment.TrackingNumber ?? "—")</p>
+                        }
+                        @if (invoice is not null)
+                        {
+                            <p><strong>الفاتورة:</strong> @invoice.InvoiceNumber</p>
+                            <a class="account-primary-button account-button-link" asp-action="Invoice" asp-route-id="@Model.Id">فتح الفاتورة</a>
+                        }
+                        <div class="order-aside-divider"></div>
+                        <h3>سجل التغييرات</h3>
+                        <ul class="admin-history">
+                            @foreach (var h in Model.StatusHistory.OrderByDescending(x => x.ChangedAt))
+                            {
+                                <li>
+                                    <strong>@(h.Status switch
+                                    {
+                                        "Pending" => "قيد الانتظار",
+                                        "Processing" => "قيد التجهيز",
+                                        "Shipped" => "تم الشحن",
+                                        "Delivered" => "تم التسليم",
+                                        "Cancelled" => "ملغي",
+                                        _ => h.Status
+                                    })</strong>
+                                    <span>@h.ChangedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</span>
+                                    @if (!string.IsNullOrWhiteSpace(h.Note))
+                                    {
+                                        <div><small>@h.Note</small></div>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                        <a class="account-primary-button account-button-link" asp-action="Index">العودة إلى حسابي <span aria-hidden="true">←</span></a><a class="order-back-link" asp-controller="Store" asp-action="Index">مواصلة التسوق</a>
                     </aside>
                 </div>
             </div>

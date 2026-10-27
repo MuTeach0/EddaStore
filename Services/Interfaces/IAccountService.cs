@@ -7,4 +7,5 @@ public interface IAccountService
     Task<AccountViewModel> GetOverviewAsync(Guid customerId, string email, CancellationToken ct = default);
     Task<Order?> GetOrderAsync(Guid orderId, Guid customerId, CancellationToken ct = default);
     Task AddAddressAsync(Guid customerId, Address address, CancellationToken ct = default);
+    Task UpdateAddressAsync(Guid customerId, Address address, CancellationToken ct = default);
 }

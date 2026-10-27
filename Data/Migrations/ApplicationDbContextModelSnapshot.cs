@@ -17,7 +17,7 @@ namespace EddaStore.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.13")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -331,12 +331,12 @@ namespace EddaStore.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -380,14 +380,14 @@ namespace EddaStore.Data.Migrations
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
-                    b.HasIndex("PhoneNumber")
-                        .IsUnique()
-                        .HasFilter("[PhoneNumber] IS NOT NULL");
-
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique()
+                        .HasFilter("[PhoneNumber] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -627,6 +627,10 @@ namespace EddaStore.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("StateOrGovernorate")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("StreetAddress")
                         .IsRequired()
                         .HasMaxLength(300)
@@ -764,6 +768,10 @@ namespace EddaStore.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("RequiredAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1010,7 +1018,8 @@ namespace EddaStore.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("OrderId")
+                        .IsUnique();
 
                     b.HasIndex("Carrier", "TrackingNumber");
 
@@ -1226,7 +1235,7 @@ namespace EddaStore.Data.Migrations
             modelBuilder.Entity("EddaStore.Models.Invoices.Invoice", b =>
                 {
                     b.HasOne("EddaStore.Models.Orders.Order", "Order")
-                        .WithOne()
+                        .WithOne("Invoice")
                         .HasForeignKey("EddaStore.Models.Invoices.Invoice", "OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1248,7 +1257,7 @@ namespace EddaStore.Data.Migrations
             modelBuilder.Entity("EddaStore.Models.Orders.OrderAddress", b =>
                 {
                     b.HasOne("EddaStore.Models.Orders.Order", "Order")
-                        .WithOne()
+                        .WithOne("ShippingAddress")
                         .HasForeignKey("EddaStore.Models.Orders.OrderAddress", "OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1286,7 +1295,7 @@ namespace EddaStore.Data.Migrations
             modelBuilder.Entity("EddaStore.Models.Payments.Payment", b =>
                 {
                     b.HasOne("EddaStore.Models.Orders.Order", "Order")
-                        .WithMany()
+                        .WithMany("Payments")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1337,8 +1346,8 @@ namespace EddaStore.Data.Migrations
             modelBuilder.Entity("EddaStore.Models.Shipping.Shipment", b =>
                 {
                     b.HasOne("EddaStore.Models.Orders.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
+                        .WithOne("Shipment")
+                        .HasForeignKey("EddaStore.Models.Shipping.Shipment", "OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1408,7 +1417,15 @@ namespace EddaStore.Data.Migrations
 
             modelBuilder.Entity("EddaStore.Models.Orders.Order", b =>
                 {
+                    b.Navigation("Invoice");
+
                     b.Navigation("Items");
+
+                    b.Navigation("Payments");
+
+                    b.Navigation("Shipment");
+
+                    b.Navigation("ShippingAddress");
 
                     b.Navigation("StatusHistory");
                 });

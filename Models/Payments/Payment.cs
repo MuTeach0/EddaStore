@@ -12,6 +12,7 @@ public class Payment : BaseEntity
     public string Status { get; set; } = "Pending";
 
     public decimal Amount { get; set; }
+    public decimal RequiredAmount { get; set; }
     public string Currency { get; set; } = "EGP";
 
     public string? TransactionReference { get; set; }

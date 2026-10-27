@@ -63,5 +63,10 @@ public class ProductCreateViewModel
 
     [ValidateNever]
     [Display(Name = "صور المنتج")]
-    public IReadOnlyList<IFormFile> NewImages { get; set; } = Array.Empty<IFormFile>();
+    public IReadOnlyList<IFormFile>? NewImages { get; set; } = Array.Empty<IFormFile>();
+
+    // Unified primary-image selector. Values: "new:<index>".
+    [ValidateNever]
+    [Display(Name = "الصورة الرئيسية")]
+    public string? PrimaryImageKey { get; set; }
 }

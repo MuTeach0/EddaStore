@@ -1,5 +1,8 @@
 
 using EddaStore.Models.Common;
+using EddaStore.Models.Invoices;
+using EddaStore.Models.Payments;
+using EddaStore.Models.Shipping;
 
 namespace EddaStore.Models.Orders;
 
@@ -24,5 +27,9 @@ public class Order : BaseEntity
     public DateTimeOffset? PlacedAt { get; set; }
 
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
+    public OrderAddress? ShippingAddress { get; set; }
+    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+    public Shipment? Shipment { get; set; }
+    public Invoice? Invoice { get; set; }
     public ICollection<OrderStatusHistory> StatusHistory { get; set; } = new List<OrderStatusHistory>();
 }

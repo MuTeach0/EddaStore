@@ -6,7 +6,8 @@
     var metaDescription = ViewData["MetaDescription"] as string ?? "عِدّة متجر تقني لمنتجات الكمبيوتر واللابتوب والإكسسوارات. تصفح تفاصيل المنتجات وأسعارها وتواصل معنا للاستفسار قبل الشراء.";
     var isPrivatePage = ViewData["Robots"] as string ?? (Context.Request.Path.StartsWithSegments("/Account") ||
 Context.Request.Path.StartsWithSegments("/Cart") || Context.Request.Path.StartsWithSegments("/Checkout") ? "noindex, nofollow" : "index, follow");
-    var canonicalUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.PathBase}{Context.Request.Path}";
+    var canonicalUrl = ViewData["CanonicalUrl"] as string
+    ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.PathBase}{Context.Request.Path}";
     var whatsappUrl = "https://wa.me/201002270587";
 }
 

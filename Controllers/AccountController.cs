@@ -38,12 +38,39 @@ public class AccountController(
     }
 
     [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> Invoice(Guid id, CancellationToken ct)
+    {
+        var order = await accountService.GetOrderAsync(id, UserId(), ct);
+        if (order?.Invoice is null) return NotFound();
+        ViewBag.Order = order;
+        return View(order.Invoice);
+    }
+
+    [Authorize]
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> AddAddress([Bind("FullName,PhoneNumber,Country,City,StateOrGovernorate,StreetAddress,Building,Apartment,PostalCode,IsDefault")] Address address, CancellationToken ct)
     {
         if (!ModelState.IsValid) { TempData["Error"] = "راجع بيانات العنوان وحاول مرة أخرى."; return RedirectToAction(nameof(Index)); }
         await accountService.AddAddressAsync(UserId(), address, ct);
         TempData["Success"] = "تم حفظ العنوان.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [Authorize, HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateAddress(Guid id, [Bind("Id,FullName,PhoneNumber,Country,City,StateOrGovernorate,StreetAddress,Building,Apartment,PostalCode,IsDefault")] Address address, CancellationToken ct)
+    {
+        if (id != address.Id) return BadRequest();
+        if (!ModelState.IsValid) { TempData["Error"] = "راجع بيانات العنوان وحاول مرة أخرى."; return RedirectToAction(nameof(Index)); }
+        try
+        {
+            await accountService.UpdateAddressAsync(UserId(), address, ct);
+            TempData["Success"] = "تم تحديث العنوان.";
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
         return RedirectToAction(nameof(Index));
     }
 

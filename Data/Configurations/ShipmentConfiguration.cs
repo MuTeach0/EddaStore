@@ -28,8 +28,8 @@ public class ShipmentConfiguration : IEntityTypeConfiguration<Shipment>
             .HasDefaultValue(false);
 
         builder.HasOne(x => x.Order)
-            .WithMany()
-            .HasForeignKey(x => x.OrderId)
+            .WithOne(x => x.Shipment)
+            .HasForeignKey<Shipment>(x => x.OrderId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.OrderId);

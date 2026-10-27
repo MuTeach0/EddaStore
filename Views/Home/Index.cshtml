@@ -26,7 +26,7 @@
                     var slideIndex = 0;
                     foreach (var heroProduct in heroProducts)
                     {
-                        var heroImage = heroProduct.Images.FirstOrDefault(productImage =>
+                        var heroImage = heroProduct.Images.OrderByDescending(productImage => productImage.IsPrimary).ThenBy(productImage => productImage.SortOrder).FirstOrDefault(productImage =>
                 !string.IsNullOrWhiteSpace(productImage.ImageUrl));
                         <a class="hero-product-slide @(slideIndex == 0 ? "is-active" : string.Empty)"
                            href="@Url.Action("Details", "Store", new { slug = heroProduct.Slug })"
@@ -103,7 +103,7 @@
             {
                 <div class="product-grid">@foreach (var product in
                     Model.FeaturedProducts) {
-                        var image = product.Images.FirstOrDefault();
+                        var image = product.Images.OrderByDescending(productImage => productImage.IsPrimary).ThenBy(productImage => productImage.SortOrder).FirstOrDefault();
                         <article class="product-card"><a
                             class="product-photo" asp-controller="Store" asp-action="Details" asp-route-slug="@product.Slug">@if
                             (!string.IsNullOrWhiteSpace(image?.ImageUrl)) {

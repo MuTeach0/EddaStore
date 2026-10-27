@@ -1,8 +1,14 @@
-@model EddaStore.Models.Orders.Order
+﻿@model EddaStore.Models.Orders.Order
+@using EddaStore.Models.Payments
+@using EddaStore.Constants
+@using EddaStore.Models.Shipping
 @using Microsoft.AspNetCore.Mvc.Rendering
 @{
-    ViewData["Title"] = $"طلب #{Model.OrderNumber}"; ViewData["Heading"] = "تفاصيل الطلب"; var statuses = ViewBag.Statuses as
-    IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    ViewData["Title"] = $"طلب #{Model.OrderNumber}"; ViewData["Heading"] = "تفاصيل الطلب";
+    var statuses = ViewBag.Statuses as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var payments = ViewBag.Payments as List<Payment> ?? new List<Payment>();
+    var payment = payments.FirstOrDefault();
+    var shipment = ViewBag.Shipment as Shipment;
 }
 <div class="admin-page-header">
     <div>
@@ -10,7 +16,37 @@
         <p>تم إنشاؤه: @(Model.PlacedAt?.ToLocalTime().ToString("yyyy/MM/dd HH:mm") ?? "—")</p>
     </div><a asp-action="Index" class="admin-secondary-btn">العودة للطلبات</a>
 </div>
-<div class="admin-details-grid">
+@if (TempData["Success"] is string successMessage)
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+@if (TempData["Error"] is string errorMessage)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+<section class="admin-table-card">
+        <h3>بيانات العميل</h3>
+        @{
+            var customer = ViewBag.Customer as EddaStore.Models.Identity.ApplicationUser;
+        }
+        <div class="admin-total">
+            <div>الاسم: @(customer is null ? "—" : $"{customer.FirstName} {customer.LastName}".Trim())</div>
+            <div>البريد: @(customer?.Email ?? "—")</div>
+            <div>الهاتف: @(customer?.PhoneNumber ?? Model.ShippingAddress?.PhoneNumber ?? "—")</div>
+        </div>
+        <h3>عنوان الشحن (snapshot)</h3>
+        @if (Model.ShippingAddress is not null)
+        {
+            <div class="admin-total">
+                <div>@Model.ShippingAddress.RecipientName</div>
+                <div>@Model.ShippingAddress.StreetAddress @Model.ShippingAddress.Building @Model.ShippingAddress.Apartment</div>
+                <div>@Model.ShippingAddress.City، @Model.ShippingAddress.Country</div>
+                <div>هاتف: @Model.ShippingAddress.PhoneNumber</div>
+            </div>
+        }
+        else { <div>—</div> }
+    </section>
+    <div class="admin-details-grid">
     <section class="admin-table-card">
         <h3>عناصر الطلب</h3>
         <table class="admin-table">
@@ -22,35 +58,118 @@
                     <th>الإجمالي</th>
                 </tr>
             </thead>
-            <tbody>@foreach(var item in Model.Items){
-                <tr>
-                    <td>@item.ProductName <small>@item.SKU</small></td>
-                    <td>@item.UnitPrice.ToString("N2")</td>
-                    <td>@item.Quantity</td>
-                    <td>@item.LineTotal.ToString("N2")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <div class="admin-total">الإجمالي النهائي: @Model.TotalAmount.ToString("N2") @Model.Currency</div>
-</section>
-<aside class="admin-form-card">
-    <h3>حالة الطلب</h3>
-    <form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post"><label>الحالة الحالية</label><select
-        name="status" asp-items="statuses"></select><button class="dashboard-primary-btn">حفظ الحالة</button>
-    </form>
-    <h3>سجل الحالات</h3>
-    <ul class="admin-history">@foreach(var h in Model.StatusHistory.OrderByDescending(x=>x.ChangedAt)){
-        <li>
-            <strong>@(h.Status switch
+            <tbody>
+                @foreach (var item in Model.Items)
                 {
-                    "Pending" => "قيد الانتظار",
-                    "Processing" => "قيد التجهيز",
-                    "Shipped" => "تم الشحن",
-                    "Delivered" => "تم التسليم",
-                    "Cancelled" => "ملغي",
-                    _ => h.Status
-                })</strong><span>@h.ChangedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</span></li>
+                    <tr>
+                        <td>@item.ProductName <small>@item.SKU</small></td>
+                        <td>@item.UnitPrice.ToString("N2")</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.LineTotal.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="admin-total">
+            <div>إجمالي المنتجات: @Model.Subtotal.ToString("N2") @Model.Currency</div>
+            @if (Model.DiscountAmount > 0)
+            {
+                <div>الخصم: -@Model.DiscountAmount.ToString("N2") @Model.Currency</div>
+            }
+            <div>تكلفة الشحن: @Model.ShippingCost.ToString("N2") @Model.Currency</div>
+            <div><strong>الإجمالي: @Model.TotalAmount.ToString("N2") @Model.Currency</strong></div>
+        </div>
+    </section>
+    <aside class="admin-form-card">
+        <h3>حالة الطلب</h3>
+        <form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post">
+            <label>الحالة الحالية</label>
+            <select name="status" asp-items="statuses"></select>
+            <button class="dashboard-primary-btn">حفظ الحالة</button>
+        </form>
+        <h3>تأكيد تكلفة الشحن</h3>
+        <form asp-action="ConfirmShipping" asp-route-id="@Model.Id" method="post">
+            <label>تكلفة الشحن (@Model.Currency)</label>
+            <input type="number" step="0.01" min="0" name="shippingCost" value="@Model.ShippingCost.ToString("0.00")" />
+            <button class="dashboard-primary-btn">حفظ تكلفة الشحن</button>
+        </form>
+        <h3>الدفع</h3>
+        <form asp-action="RecordPayment" asp-route-id="@Model.Id" method="post">
+            <label>طريقة/مزود الدفع</label>
+            <input type="text" name="provider" value="@(payment?.Provider ?? "Manual")" />
+            <label>المبلغ المطلوب (@Model.Currency)</label>
+            <input type="number" step="0.01" min="0" name="requiredAmount" value="@(payment?.RequiredAmount ?? Model.TotalAmount)" />
+            <label>المبلغ المستلم (@Model.Currency)</label>
+            <input type="number" step="0.01" min="0" name="amountReceived" value="@(payment?.Amount ?? 0m)" />
+            <label>مرجع العملية</label>
+            <input type="text" name="transactionReference" value="@payment?.TransactionReference" />
+            <label><input type="checkbox" name="verified" value="true" @(payment?.Status == PaymentStatuses.Paid ? "checked" : "") /> تم التحقق من الدفع</label>
+            <button class="dashboard-primary-btn">حفظ بيانات الدفع</button>
+        </form>
+        <div>
+            <strong>حالة الدفع:</strong>
+            @(payment?.Status switch
+            {
+                PaymentStatuses.Paid => "مدفوع",
+                PaymentStatuses.PartiallyPaid => "مدفوع جزئياً",
+                PaymentStatuses.Pending => "بانتظار الدفع",
+                PaymentStatuses.Cancelled => "ملغي",
+                _ => payment?.Status ?? "—"
+            })
+            @if (payment is not null)
+            {
+                <div>المطلوب: @payment.RequiredAmount.ToString("N2") / المستلم: @payment.Amount.ToString("N2") @Model.Currency</div>
+            }
+        </div>
+        <h3>الفاتورة</h3>
+        @{
+            var invoice = ViewBag.Invoice as EddaStore.Models.Invoices.Invoice;
+        }
+        @if (invoice is not null)
+        {
+            <div>رقم الفاتورة: @invoice.InvoiceNumber</div>
+            <div>الإجمالي: @invoice.TotalAmount.ToString("N2") @invoice.Currency</div>
+            <a class="mini-link" asp-area="Admin" asp-controller="Orders" asp-action="Invoice" asp-route-id="@Model.Id">عرض الفاتورة</a>
+        }
+        else { <div>لا توجد فاتورة بعد.</div> }
+        <h3>الشحن</h3>
+        <form asp-action="SaveShipment" asp-route-id="@Model.Id" method="post">
+            <label>شركة/وسيلة التوصيل</label>
+            <input type="text" name="carrier" value="@(shipment?.Carrier)" />
+            <label>رقم التتبع</label>
+            <input type="text" name="trackingNumber" value="@(shipment?.TrackingNumber)" />
+            <label>حالة الشحن</label>
+            <select name="status">
+                <option value="Pending" selected="@(shipment?.Status == "Pending")">قيد التجهيز</option>
+                <option value="Shipped" selected="@(shipment?.Status == "Shipped")">تم الشحن</option>
+                <option value="Delivered" selected="@(shipment?.Status == "Delivered")">تم التسليم</option>
+            </select>
+            <label>تاريخ الشحن</label>
+            <input type="datetime-local" name="shippedAt" value="@(shipment?.ShippedAt?.ToLocalTime().ToString("yyyy-MM-ddTHH:mm"))" />
+            <label>تاريخ التسليم</label>
+            <input type="datetime-local" name="deliveredAt" value="@(shipment?.DeliveredAt?.ToLocalTime().ToString("yyyy-MM-ddTHH:mm"))" />
+            <button class="dashboard-primary-btn">حفظ بيانات الشحن</button>
+        </form>
+        <h3>سجل الحالات</h3>
+        <ul class="admin-history">
+            @foreach (var h in Model.StatusHistory.OrderByDescending(x => x.ChangedAt))
+            {
+                <li>
+                    <strong>@(h.Status switch
+                    {
+                        "Pending" => "قيد الانتظار",
+                        "Processing" => "قيد التجهيز",
+                        "Shipped" => "تم الشحن",
+                        "Delivered" => "تم التسليم",
+                        "Cancelled" => "ملغي",
+                        _ => h.Status
+                    })</strong>
+                    <span>@h.ChangedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</span>
+                    @if (!string.IsNullOrWhiteSpace(h.Note))
+                    {
+                        <div><small>@h.Note</small></div>
+                    }
+                </li>
             }
         </ul>
     </aside>

@@ -106,6 +106,23 @@
                                                     <div><strong>@address.FullName</strong>
                                                         <p>@address.City، @address.StreetAddress</p><small>@address.PhoneNumber</small>
                                                     </div>
+                                                    <details class="address-form-disclosure">
+                                                        <summary>تعديل العنوان</summary>
+                                                        <form asp-action="UpdateAddress" asp-route-id="@address.Id" method="post" class="form-grid">
+                                                            <input type="hidden" name="Id" value="@address.Id" />
+                                                            <label>الاسم بالكامل<input name="FullName" value="@address.FullName" required /></label>
+                                                            <label>رقم الهاتف<input name="PhoneNumber" type="tel" value="@address.PhoneNumber" required /></label>
+                                                            <label>الدولة<input name="Country" value="@address.Country" /></label>
+                                                            <label>المحافظة<input name="StateOrGovernorate" value="@address.StateOrGovernorate" /></label>
+                                                            <label>المدينة<input name="City" value="@address.City" required /></label>
+                                                            <label>العنوان بالتفصيل<input name="StreetAddress" value="@address.StreetAddress" required /></label>
+                                                            <label>المبنى<input name="Building" value="@address.Building" /></label>
+                                                            <label>الشقة<input name="Apartment" value="@address.Apartment" /></label>
+                                                            <label>الرمز البريدي<input name="PostalCode" value="@address.PostalCode" /></label>
+                                                            <label class="address-default-check"><input type="checkbox" name="IsDefault" value="true" @(address.IsDefault ? "checked" : "") /> افتراضي</label>
+                                                            <button class="account-secondary-button" type="submit">حفظ التعديل</button>
+                                                        </form>
+                                                    </details>
                                                 </article>
                                             }
                                         </div>
