@@ -42,15 +42,19 @@
         }
     };
 
-    // أضف التقييم الإجمالي فقط عند وجود مراجعات معتمدة.
-    if (reviews.Count > 0)
+    // أضف التقييم الإجمالي من المراجعات المعتمدة والصحيحة فقط.
+    var approvedRatings = reviews
+        .Where(r => r.Rating >= 1 && r.Rating <= 5)
+        .ToList();
+
+    if (approvedRatings.Count > 0)
     {
         productSchema["aggregateRating"] = new Dictionary<string, object?>
         {
             ["@type"] = "AggregateRating",
             ["ratingValue"] = Math.Round(
-                reviews.Average(r => r.Rating), 2),
-            ["reviewCount"] = reviews.Count,
+                approvedRatings.Average(r => r.Rating), 2),
+            ["reviewCount"] = approvedRatings.Count,
             ["bestRating"] = 5,
             ["worstRating"] = 1
         };
@@ -66,8 +70,8 @@
 
 @section StructuredData {
     <script type="application/ld+json">@Html.Raw(
-                                            System.Text.Json.JsonSerializer.Serialize(productSchema)
-                    )</script>
+                                                                                                                                                                                            System.Text.Json.JsonSerializer.Serialize(productSchema)
+                                    )</script>
     }
 
     <section class="page-head">
