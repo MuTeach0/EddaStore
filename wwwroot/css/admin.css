@@ -1955,3 +1955,62 @@ body.admin-prototype-body {
     .invoice-print tr { page-break-inside: avoid; }
     .invoice-print * { background: transparent !important; color: #000 !important; }
 }
+
+/* Responsive hardening (appended). */
+@media (max-width: 600px) {
+  .admin-prototype-body .admin-filter input,
+  .admin-prototype-body .admin-filter select,
+  .admin-prototype-body .filters input,
+  .admin-prototype-body .filters select {
+    width: 100%;
+    min-width: 0;
+  }
+  .admin-prototype-body .admin-form-card {
+    max-width: 100%;
+  }
+  .admin-prototype-body .admin-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .admin-prototype-body .admin-form-actions .btn,
+  .admin-prototype-body .admin-form-actions button,
+  .admin-prototype-body .admin-form-actions a {
+    width: 100%;
+  }
+  .admin-prototype-body .admin-page-header .btn,
+  .admin-prototype-body .dashboard-intro .btn {
+    width: 100%;
+  }
+  .admin-prototype-body .stat {
+    min-width: 0;
+  }
+  .admin-prototype-body .topbar {
+    gap: 8px;
+  }
+  .admin-prototype-body .mobile-overlay.show {
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 430px) {
+  .admin-prototype-body .grid.stats {
+    grid-template-columns: 1fr;
+  }
+  .admin-prototype-body .content {
+    padding: 12px;
+  }
+  .admin-prototype-body .admin-table th,
+  .admin-prototype-body .admin-table td {
+    padding: 10px;
+    font-size: 12px;
+  }
+}
+
+/* Admin mobile menu hardening. */
+body.admin-menu-open.admin-prototype-body .main {
+  overflow: hidden;
+}
+.admin-prototype-body .mobile-overlay.show {
+  cursor: pointer;
+}
+

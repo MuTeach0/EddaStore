@@ -1287,3 +1287,30 @@
     .invoice-print tr { page-break-inside: avoid; }
     .invoice-print * { background: transparent !important; color: #000 !important; }
 }
+
+/* Responsive hardening (appended). */
+@media (max-width: 430px) {
+  .account-page {
+    padding-inline: 12px;
+  }
+  .account-layout .form-grid,
+  .account-layout .form-two-columns {
+    grid-template-columns: 1fr;
+  }
+  .auth-links {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .auth-primary,
+  .auth-google {
+    width: 100%;
+  }
+  .account-layout .table-wrap {
+    max-width: 100%;
+  }
+  .settings-help > a {
+    margin-inline-start: 0;
+  }
+}
+

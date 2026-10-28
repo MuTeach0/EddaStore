@@ -1,5 +1,8 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
+@using System.Security.Claims
+@using EddaStore.Services.Interfaces
+@inject ICartService CartService
 @{
     var pageTitle = ViewData["Title"] as string;
     var fullTitle = string.IsNullOrWhiteSpace(pageTitle) ? "عِدّة | متجر الكمبيوتر واللابتوب والإكسسوارات" : $"{pageTitle} | عِدّة";
@@ -9,6 +12,16 @@ Context.Request.Path.StartsWithSegments("/Cart") || Context.Request.Path.StartsW
     var canonicalUrl = ViewData["CanonicalUrl"] as string
     ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.PathBase}{Context.Request.Path}";
     var whatsappUrl = "https://wa.me/201002270587";
+    var ogType = ViewData["OgType"] as string ?? "website";
+    var ogImage = ViewData["OgImage"] as string
+        ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.PathBase}/assets/brand-mark.svg";
+    var cartCount = 0;
+    if (User.Identity?.IsAuthenticated == true &&
+        Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var cartUserId))
+    {
+        var cart = await CartService.GetAsync(cartUserId, Context.RequestAborted);
+        cartCount = cart.Items.Sum(item => item.Quantity);
+    }
 }
 
 <head>
@@ -20,10 +33,11 @@ Context.Request.Path.StartsWithSegments("/Cart") || Context.Request.Path.StartsW
     <link rel="canonical" href="@canonicalUrl" />
     <meta property="og:locale" content="ar_EG" />
     <meta property="og:site_name" content="عِدّة EddaStore" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="@ogType" />
     <meta property="og:title" content="@fullTitle" />
     <meta property="og:description" content="@metaDescription" />
     <meta property="og:url" content="@canonicalUrl" />
+    <meta property="og:image" content="@ogImage" />
     <meta name="google-site-verification" content="I7StgNYwuUwLR7dLZ6su5V-DhhOTdnoBNLV-wZUC9dY" />
     <script type="application/ld+json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
     {
@@ -87,8 +101,29 @@ Context.Request.Path.StartsWithSegments("/Cart") || Context.Request.Path.StartsW
                                 <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 1.9-1.4L21 8H6" />
                                 <circle cx="10" cy="20" r="1" />
                                 <circle cx="18" cy="20" r="1" />
-                            </svg></a>
+                            </svg>
+                            <span class="count">@cartCount</span>
+                        </a>
                         </div>
+                        <div class="mobile-header-cluster">
+                        <div class="mobile-header-icons">
+                            <a class="icon-link cart-icon-link" asp-area="" asp-controller="Cart" asp-action="Index"
+                               aria-label="سلة المشتريات" title="سلة المشتريات"><svg viewBox="0 0 24 24" width="21" height="21"
+                                                                                   aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                                                                   stroke-linejoin="round">
+                                <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 1.9-1.4L21 8H6" />
+                                <circle cx="10" cy="20" r="1" />
+                                <circle cx="18" cy="20" r="1" />
+                            </svg>
+                            <span class="count">@cartCount</span>
+                        </a>
+                            <a class="icon-link" asp-area="" asp-controller="Wishlist" asp-action="Index" aria-label="المفضلة" title="المفضلة">♡</a>
+                        </div>
+
+                        <button type="button" class="mobile-menu-toggle" id="site-menu-toggle"
+                                aria-label="فتح القائمة" aria-expanded="false" aria-controls="site-mobile-menu">☰</button>
+                        </div>
+
                     </div>
                     <nav class="nav" aria-label="القائمة الرئيسية">
                         <div class="container nav-inner">
@@ -99,6 +134,41 @@ Context.Request.Path.StartsWithSegments("/Cart") || Context.Request.Path.StartsW
                         </div>
                     </nav>
                 </header>
+                <div class="mobile-overlay" id="site-menu-overlay"></div>
+                <aside class="mobile-drawer" id="site-mobile-menu" aria-label="قائمة الموبايل" aria-hidden="true">
+                    <div class="mobile-drawer-head">
+                        <a class="brand" asp-area="" asp-controller="Home" asp-action="Index" aria-label="الصفحة الرئيسية">
+                            <img src="~/assets/brand-mark.svg" alt="شعار عِدّة" />
+                            <span><span class="brand-name">عِدّة</span><span class="brand-tag">تقنيتك تبدأ من هنا</span></span>
+                        </a>
+                        <button type="button" class="mobile-drawer-close" id="site-menu-close" aria-label="إغلاق القائمة">×</button>
+                    </div>
+                    <nav class="mobile-drawer-nav" aria-label="القائمة الرئيسية">
+                        <a asp-area="" asp-controller="Home" asp-action="Index">الرئيسية</a>
+                        <a asp-area="" asp-controller="Store" asp-action="Index">كل المنتجات</a>
+                        <a asp-area="" asp-controller="Home" asp-action="Contact">تواصل معنا</a>
+                        <a asp-area="" asp-controller="Home" asp-action="Faq">الأسئلة الشائعة</a>
+                    </nav>
+                    <div class="mobile-drawer-actions">
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a class="header-admin-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">▦ <span>لوحة التحكم</span></a>
+                        }
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a class="header-login-link" asp-area="" asp-controller="Account" asp-action="Index">حسابي</a>
+                            <form class="logout-form" asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit" class="header-login-link header-logout-button">تسجيل الخروج</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a class="header-login-link" asp-area="" asp-controller="Account" asp-action="Register">إنشاء حساب</a>
+                            <a class="header-login-link" asp-area="" asp-controller="Account" asp-action="Login">تسجيل الدخول</a>
+                        }
+                    </div>
+                </aside>
+
                 <main>
                     @if (TempData["Success"] is string successMessage)
                     {
@@ -149,6 +219,44 @@ Context.Request.Path.StartsWithSegments("/Cart") || Context.Request.Path.StartsW
                         d="M12.04 2a9.8 9.8 0 0 0-8.36 14.91L2.3 22l5.22-1.36A9.96 9.96 0 0 0 12.04 21h.01A9.5 9.5 0 0 0 21.6 11.5 9.56 9.56 0 0 0 12.04 2Zm0 17.2h-.01a8.1 8.1 0 0 1-4.12-1.13l-.3-.18-3.1.81.83-3.02-.2-.31a7.8 7.8 0 1 1 6.9 3.83Zm4.29-5.84c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.43-1.34-1.67-.14-.24-.02-.37.1-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.46-.4-.4-.54-.41h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.7 2.6 4.12 3.64.58.25 1.04.4 1.4.51.59.19 1.13.16 1.55.1.47-.07 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28Z" />
                     </svg><span class="whatsapp-tooltip">واتساب <b dir="ltr">01002270587</b></span></a>
                     <script src="~/js/site.js" asp-append-version="true"></script>
+                    <script>(() => {
+                      const toggle = document.getElementById('site-menu-toggle');
+                      const menu = document.getElementById('site-mobile-menu');
+                      const overlay = document.getElementById('site-menu-overlay');
+                      const closeBtn = document.getElementById('site-menu-close');
+                      if (!toggle || !menu || !overlay) return;
+                      const openMenu = () => {
+                        menu.classList.add('open');
+                        overlay.classList.add('show');
+                        toggle.setAttribute('aria-expanded', 'true');
+                        menu.setAttribute('aria-hidden', 'false');
+                        document.body.classList.add('mobile-menu-open');
+                      };
+                      const closeMenu = () => {
+                        menu.classList.remove('open');
+                        overlay.classList.remove('show');
+                        toggle.setAttribute('aria-expanded', 'false');
+                        menu.setAttribute('aria-hidden', 'true');
+                        document.body.classList.remove('mobile-menu-open');
+                      };
+                      toggle.addEventListener('click', () => {
+                        if (menu.classList.contains('open')) closeMenu(); else openMenu();
+                      });
+                      overlay.addEventListener('click', closeMenu);
+                      closeBtn?.addEventListener('click', closeMenu);
+                      menu.querySelectorAll('a, button[type="submit"]').forEach((el) => {
+                        el.addEventListener('click', () => {
+                          if (window.innerWidth <= 900) closeMenu();
+                        });
+                      });
+                      document.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape') closeMenu();
+                      });
+                      window.addEventListener('resize', () => {
+                        if (window.innerWidth > 900) closeMenu();
+                      });
+                    })();</script>
+
                     @await RenderSectionAsync("StructuredData", required: false)
                     @await RenderSectionAsync("Scripts", required: false)
                 </body>

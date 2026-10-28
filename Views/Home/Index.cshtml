@@ -3,7 +3,7 @@
     ViewData["Title"] = "متجر الكمبيوتر واللابتوب والإكسسوارات"; ViewData["MetaDescription"] = "تسوّق أجهزة الكمبيوتر واللابتوب وإكسسوارات التقنية من عِدّة. قارن تفاصيل المنتجات وأسعارها وتواصل معنا للاستفسار قبل الشراء.";
 }
 @{
-    var heroProducts = Model.FeaturedProducts
+    var heroProducts = (Model.FeaturedProducts ?? Array.Empty<EddaStore.Models.Products.Product>())
         .Where(product => product.Images.Any(productImage => !string.IsNullOrWhiteSpace(productImage.ImageUrl)))
         .ToList();
 }
@@ -99,59 +99,24 @@
                     <p>منتجات متاحة ومختارة بعناية.</p>
                 </div><a class="text-link" asp-controller="Store" asp-action="Index">كل المنتجات ←</a>
             </div>
-            @if (Model.FeaturedProducts.Count > 0)
+            @if (Model.FeaturedProducts != null && Model.FeaturedProducts.Count > 0)
             {
-                <div class="product-grid">@foreach (var product in
-                    Model.FeaturedProducts) {
-                        var image = product.Images.OrderByDescending(productImage => productImage.IsPrimary).ThenBy(productImage => productImage.SortOrder).FirstOrDefault();
-                        <article class="product-card"><a
-                            class="product-photo" asp-controller="Store" asp-action="Details" asp-route-slug="@product.Slug">@if
-                            (!string.IsNullOrWhiteSpace(image?.ImageUrl)) {
-                                <img src="@image.ImageUrl"
-                                     alt="@(image?.AltText ?? product.Name)" loading="lazy" />
-                            } else
-                            {
-
-                                <span
-                                class="image-fallback">لا تتوفر صورة</span>
-                            }
-                        </a>@if (User.Identity?.IsAuthenticated == true) {
-                        <form class="product-favorite-form" asp-controller="Wishlist" asp-action="Add" method="post"><input
-                            type="hidden" name="productId" value="@product.Id" /><input type="hidden" name="returnUrl"
-                                                                                        value="@Context.Request.Path" /><button class="heart" type="submit"
-                                                                    aria-label="أضف @product.Name إلى المفضلة">♡</button></form>
-                        } else
-                        {
-
-                            <a class="heart"
-                               asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path"
-                               aria-label="سجّل الدخول لإضافة @product.Name إلى المفضلة">♡</a>
-                        }
-                        <div class="product-info">
-                            <div class="product-brand">@product.Brand?.Name</div><a class="product-title" asp-controller="Store"
-                                                                                    asp-action="Details" asp-route-slug="@product.Slug">@product.Name</a>
-                            <div class="price-row"><span class="price">@product.Price.ToString("N0")
-                                ج.م</span>@if(product.CompareAtPrice > product.Price){
-                                <span
-                                class="old-price">@product.CompareAtPrice?.ToString("N0") ج.م</span>
-                            }
-                        </div>
-                        <div class="product-bottom"><a class="btn btn-primary" asp-controller="Store" asp-action="Details"
-                                                           asp-route-slug="@product.Slug">عرض التفاصيل</a></div>
-                        </div>
-                    </article>
-                }
-            </div>
-        } else
-        {
-
-            <div class="empty">
-                <div class="empty-icon">⌁</div>
-                <h2>لا توجد منتجات متاحة حاليًا</h2>
-                <p>تصفّح المنتجات المتاحة أو تواصل معنا لو بتدور على منتج معين.</p><a class="btn btn-primary"
-                                                                                      asp-controller="Store" asp-action="Index">تصفّح المنتجات</a>
-            </div>
-        }
+                <div class="product-grid featured-products-grid">
+@foreach (var product in Model.FeaturedProducts)
+{
+    @await Html.PartialAsync("_ProductCard", product)
+}
+                </div>
+            }
+            else
+            {
+                <div class="empty">
+                    <div class="empty-icon">⌁</div>
+                    <h2>لا توجد منتجات متاحة حاليًا</h2>
+                    <p>تصفّح المنتجات المتاحة أو تواصل معنا لو بتدور على منتج معين.</p><a class="btn btn-primary"
+                                                                                          asp-controller="Store" asp-action="Index">تصفّح المنتجات</a>
+                </div>
+            }
     </section>
     <section class="trust-row">
         <div class="trust-item"><span aria-hidden="true">01</span>

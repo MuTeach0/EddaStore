@@ -17,8 +17,10 @@ public sealed class HomeService(ApplicationDbContext context) : IHomeService
 
         var products = await context.Products
             .AsNoTracking()
-            .Where(product => product.IsActive && product.StockQuantity > 0)
+            .Where(product => !product.IsDeleted && (!product.IsActive || product.StockQuantity > 0))
             .Include(product => product.Images)
+            .Include(product => product.Category)
+            .Include(product => product.Brand)
             .OrderByDescending(product => product.Name)
             .Take(8)
             .ToListAsync(cancellationToken);

@@ -13,6 +13,16 @@
         .ThenBy(i => i.SortOrder)
         .FirstOrDefault();
 
+    ViewData["OgType"] = "product";
+    var productOgImage = image?.ImageUrl;
+    if (!string.IsNullOrWhiteSpace(productOgImage) &&
+        productOgImage.StartsWith("/"))
+    {
+        productOgImage =
+            $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.PathBase}{productOgImage}";
+    }
+    ViewData["OgImage"] = productOgImage;
+
     // المراجعات التي تم اعتمادها فقط.
     var reviews = ViewBag.Reviews as List<EddaStore.Models.Customers.Review>
         ?? new List<EddaStore.Models.Customers.Review>();
@@ -94,7 +104,7 @@
                     }
                     @if (mainImage is not null)
                     {
-                        <img id="productMainImage" src="@mainImage.ImageUrl" alt="@(mainImage.AltText ?? Model.Name)" />
+                        <img id="productMainImage" src="@mainImage.ImageUrl" alt="@(mainImage.AltText ?? Model.Name)" fetchpriority="high" />
                         @if (orderedImages.Count > 1)
                         {
                             <div class="product-gallery-controls">
@@ -122,18 +132,19 @@
                     }
                 </div>
                 <div class="detail-info"><span class="eyebrow">@Model.Category.Name — @Model.Brand.Name</span>
+                    @if (!Model.IsActive) { <span class="detail-unavailable-badge">غير متوفر</span> }
                     <h1>@Model.Name</h1>
                     <div class="price-row"><span class="price">@Model.Price.ToString("N0") ج.م</span>@if(Model.CompareAtPrice >
                         Model.Price){
                             <span class="old-price">@Model.CompareAtPrice?.ToString("N0") ج.م</span>
                         }
-                    </div><span class="stock">@(Model.StockQuantity > 0 ? "● متوفر في المخزون" : "غير متوفر حاليًا")</span>
-                    <p>@Model.Description</p>@if(User.Identity?.IsAuthenticated == true){
+                    </div><span class="stock">@(Model.IsActive ? (Model.StockQuantity > 0 ? "● متوفر في المخزون" : "غير متوفر حاليًا") : "غير متوفر")</span>
+                    <p>@Model.Description</p>@if(User.Identity?.IsAuthenticated == true && Model.IsActive){
                     <form asp-controller="Wishlist" asp-action="Add" method="post"><input type="hidden" name="productId"
                                                                                               value="@Model.Id" /><input type="hidden" name="returnUrl" value="@Context.Request.Path" /><button
                         class="btn btn-outline" type="submit">♡ أضف للمفضلة</button></form>
                     }
-                    @if (Model.StockQuantity > 0)
+                    @if (Model.IsActive && Model.StockQuantity > 0)
                     {
                         <form asp-controller="Cart" asp-action="Add" method="post"><input type="hidden" name="productId"
                                                                                               value="@Model.Id" /><input type="hidden" name="returnUrl" value="@Context.Request.Path" />

@@ -1,0 +1,80 @@
+@model EddaStore.Models.Products.Product
+@{
+    var image = Model.Images
+        .OrderByDescending(i => i.IsPrimary)
+        .ThenBy(i => i.SortOrder)
+        .FirstOrDefault();
+    var returnUrl = $"{Context.Request.Path}{Context.Request.QueryString}";
+}
+<article class="product-card">
+    <a class="product-photo" asp-controller="Store" asp-action="Details" asp-route-slug="@Model.Slug">
+        @if (!string.IsNullOrWhiteSpace(image?.ImageUrl))
+        {
+            <img src="@image.ImageUrl" alt="@(image?.AltText ?? Model.Name)" loading="lazy" />
+        }
+        else
+        {
+            <span class="image-fallback">لا تتوفر صورة</span>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.Category?.Name))
+        {
+            <span class="tag">@Model.Category.Name</span>
+        }
+        @if (!Model.IsActive)
+        {
+            <span class="product-unavailable-badge">غير متوفر</span>
+        }
+    </a>
+    @if (User.Identity?.IsAuthenticated == true && Model.IsActive)
+    {
+        <form class="product-favorite-form" asp-controller="Wishlist" asp-action="Add" method="post">
+            <input type="hidden" name="productId" value="@Model.Id" />
+            <input type="hidden" name="returnUrl" value="@returnUrl" />
+            <button class="heart" type="submit" aria-label="أضف @Model.Name إلى المفضلة">♡</button>
+        </form>
+    }
+    else if (User.Identity?.IsAuthenticated != true && Model.IsActive)
+    {
+        <a class="heart" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@returnUrl"
+           aria-label="سجّل الدخول لإضافة @Model.Name إلى المفضلة">♡</a>
+    }
+    <div class="product-info">
+        <div class="product-brand">@(Model.Brand?.Name ?? string.Empty)</div>
+        <a class="product-title" asp-controller="Store" asp-action="Details" asp-route-slug="@Model.Slug">@Model.Name</a>
+        <div class="price-row">
+            <span class="price">@Model.Price.ToString("N0") ج.م</span>
+            @if (Model.CompareAtPrice > Model.Price)
+            {
+                <span class="old-price">@Model.CompareAtPrice?.ToString("N0") ج.م</span>
+            }
+        </div>
+    </div>
+    <div class="product-bottom">
+        <a class="btn btn-primary" asp-controller="Store" asp-action="Details" asp-route-slug="@Model.Slug">عرض التفاصيل</a>
+        @if (Model.IsActive && Model.StockQuantity > 0)
+        {
+            <form class="product-cart-form" asp-controller="Cart" asp-action="Add" method="post">
+                <input type="hidden" name="productId" value="@Model.Id" />
+                <input type="hidden" name="quantity" value="1" />
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                <button class="btn btn-primary" type="submit" aria-label="إضافة إلى السلة" title="إضافة إلى السلة">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="20" r="1.5"></circle>
+                        <circle cx="18" cy="20" r="1.5"></circle>
+                        <path d="M3 4h2l2.4 10.2a1 1 0 0 0 1 .8h9.7a1 1 0 0 0 1-.8L21 7H7"></path>
+                    </svg>
+                </button>
+            </form>
+        }
+        else if (Model.IsActive)
+        {
+            <button class="btn btn-primary" type="button" disabled aria-label="غير متوفر" title="غير متوفر">
+                <svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="20" r="1.5"></circle>
+                    <circle cx="18" cy="20" r="1.5"></circle>
+                    <path d="M3 4h2l2.4 10.2a1 1 0 0 0 1 .8h9.7a1 1 0 0 0 1-.8L21 7H7"></path>
+                </svg>
+            </button>
+        }
+    </div>
+</article>
