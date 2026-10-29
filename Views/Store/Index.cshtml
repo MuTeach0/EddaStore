@@ -1,115 +1,230 @@
 @model EddaStore.Models.ViewModels.Store.StoreIndexViewModel
+
 @{
-    ViewData["Title"] = "منتجات الكمبيوتر واللابتوب والإكسسوارات"; ViewData["MetaDescription"] = "تصفح منتجات عِدّة من أجهزة الكمبيوتر واللابتوب والإكسسوارات، واستخدم البحث والتصفية لمقارنة الخيارات المتاحة.";
+    ViewData["Title"] = "منتجات الكمبيوتر واللابتوب والإكسسوارات";
+    ViewData["MetaDescription"] = "تصفح منتجات عِدّة من أجهزة الكمبيوتر واللابتوب والإكسسوارات، واستخدم البحث والتصفية لمقارنة الخيارات المتاحة.";
 }
+
 <section class="page-head">
     <div class="container">
-        <div class="breadcrumbs"><a asp-controller="Home" asp-action="Index">الرئيسية</a> / المنتجات</div>
+        <div class="breadcrumbs">
+            <a asp-controller="Home" asp-action="Index">الرئيسية</a> / المنتجات
+        </div>
         <h1>كل المنتجات</h1>
         <p>اختار المنتج المناسب ليك من مجموعتنا.</p>
     </div>
 </section>
+
 <div class="container section">
     <div class="catalog-layout">
-<aside class="filters store-filters" aria-label="تصفية النتائج">
-            <details class="store-filters__details" open="@( !string.IsNullOrWhiteSpace(Model.Category) || !string.IsNullOrWhiteSpace(Model.Brand) )">
+
+        <aside class="filters store-filters" aria-label="تصفية النتائج">
+            <details class="store-filters__details"
+                     open="@(!string.IsNullOrWhiteSpace(Model.Category) || !string.IsNullOrWhiteSpace(Model.Brand))">
+
                 <summary class="store-filters__summary">
                     <span>تصفية النتائج</span>
                     <span class="store-filters__toggle-icon" aria-hidden="true">▾</span>
                 </summary>
+
                 <div class="store-filters__panel">
-                    @if (!string.IsNullOrWhiteSpace(Model.Category) || !string.IsNullOrWhiteSpace(Model.Brand))
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Category) ||
+                         !string.IsNullOrWhiteSpace(Model.Brand))
                     {
                         <div class="active-filters" role="status" aria-live="polite">
                             <span class="active-filters__label">الفلاتر النشطة:</span>
+
                             @if (!string.IsNullOrWhiteSpace(Model.Category))
                             {
-                                var selectedCategory = Model.Categories.FirstOrDefault(item => item.Slug == Model.Category);
-                                <span class="active-filter-chip">التصنيف: @(selectedCategory?.Name ?? Model.Category)</span>
+                                var selectedCategory =
+                                    Model.Categories.FirstOrDefault(item => item.Slug == Model.Category);
+
+                                <span class="active-filter-chip">
+                                    التصنيف: @(selectedCategory?.Name ?? Model.Category)
+                                </span>
                             }
+
                             @if (!string.IsNullOrWhiteSpace(Model.Brand))
                             {
-                                var selectedBrand = Model.Brands.FirstOrDefault(item => item.Slug == Model.Brand);
-                                <span class="active-filter-chip">الماركة: @(selectedBrand?.Name ?? Model.Brand)</span>
+                                var selectedBrand =
+                                    Model.Brands.FirstOrDefault(item => item.Slug == Model.Brand);
+
+                                <span class="active-filter-chip">
+                                    الماركة: @(selectedBrand?.Name ?? Model.Brand)
+                                </span>
                             }
-                            <a class="active-filters__clear" asp-controller="Store" asp-action="Index" asp-route-q="@Model.Query" asp-route-sort="@Model.Sort">مسح الفلاتر</a>
+
+                            <a class="active-filters__clear" asp-controller="Store" asp-action="Index"
+                               asp-route-q="@Model.Query" asp-route-sort="@Model.Sort">
+                                مسح الفلاتر
+                            </a>
                         </div>
                     }
+
                     <form class="store-filters__form" asp-action="Index" method="get">
                         <input type="hidden" name="q" value="@Model.Query" />
                         <input type="hidden" name="sort" value="@Model.Sort" />
                         <input type="hidden" name="page" value="1" />
+
                         <div class="store-filters__fields">
+
                             <label class="store-filter-field">
                                 <span class="store-filter-field__label">التصنيف</span>
+
                                 <select name="category" aria-label="التصنيف">
                                     <option value="">كل التصنيفات</option>
+
                                     @foreach (var category in Model.Categories)
                                     {
-                                        <option value="@category.Slug" selected="@(category.Slug == Model.Category)">@category.Name</option>
+                                        <option value="@category.Slug" selected="@(category.Slug == Model.Category)">
+                                            @category.Name
+                                        </option>
                                     }
                                 </select>
                             </label>
+
                             <label class="store-filter-field">
                                 <span class="store-filter-field__label">الماركة</span>
+
                                 <select name="brand" aria-label="الماركة">
                                     <option value="">كل الماركات</option>
+
                                     @foreach (var brand in Model.Brands)
                                     {
-                                        <option value="@brand.Slug" selected="@(brand.Slug == Model.Brand)">@brand.Name</option>
+                                        <option value="@brand.Slug" selected="@(brand.Slug == Model.Brand)">
+                                            @brand.Name
+                                        </option>
                                     }
                                 </select>
                             </label>
+
                         </div>
-                        <button class="btn btn-primary btn-block store-filters__submit" type="submit">تطبيق التصفية</button>
+
+                        <button class="btn btn-primary btn-block store-filters__submit" type="submit">
+                            تطبيق التصفية
+                        </button>
                     </form>
                 </div>
             </details>
         </aside>
-            <div>
-                <div class="toolbar"><strong>عرض @Model.TotalCount منتج</strong>
-                    <form asp-action="Index" method="get"><input type="hidden" name="q" value="@Model.Query" /><input
-                        type="hidden" name="category" value="@Model.Category" /><input type="hidden" name="brand"
-                                                                                       value="@Model.Brand" /><input type="hidden" name="minPrice" value="@Model.MinPrice" /><input
-                        type="hidden" name="maxPrice" value="@Model.MaxPrice" /><label class="sort-label">ترتيب حسب
-                        <select name="sort" onchange="this.form.submit()">
-                            <option value="newest" selected="@(Model.Sort == "newest")">الأحدث</option>
-                            <option value="price_asc" selected="@(Model.Sort == "price_asc")">السعر: الأقل أولًا
-                            </option>
-                            <option value="price_desc" selected="@(Model.Sort == "price_desc")">السعر: الأعلى أولًا
-                            </option>
-                            <option value="name" selected="@(Model.Sort == "name")">الاسم</option>
-                        </select></label></form>
-                    </div>
-                    @if (Model.Products.Count > 0)
-                    {
-                        <div class="product-grid">
-                            @foreach (var product in Model.Products)
-                            {
-                                @await Html.PartialAsync("_ProductCard", product)
-                            }
-                </div>
-            }else
-            {
 
+        <div class="catalog-results">
+
+            <div class="toolbar">
+                <strong>عرض @Model.TotalCount منتج</strong>
+
+                <form asp-action="Index" method="get">
+                    <input type="hidden" name="q" value="@Model.Query" />
+                    <input type="hidden" name="category" value="@Model.Category" />
+                    <input type="hidden" name="brand" value="@Model.Brand" />
+                    <input type="hidden" name="minPrice" value="@Model.MinPrice" />
+                    <input type="hidden" name="maxPrice" value="@Model.MaxPrice" />
+                    <input type="hidden" name="page" value="1" />
+
+                    <label class="sort-label">
+                        ترتيب حسب
+
+                        <select name="sort" onchange="this.form.submit()">
+                            <option value="newest" selected="@(Model.Sort == "newest")">
+                                الأحدث
+                            </option>
+                            <option value="price_asc" selected="@(Model.Sort == "price_asc")">
+                                السعر: الأقل أولًا
+                            </option>
+                            <option value="price_desc" selected="@(Model.Sort == "price_desc")">
+                                السعر: الأعلى أولًا
+                            </option>
+                            <option value="name" selected="@(Model.Sort == "name")">
+                                الاسم
+                            </option>
+                        </select>
+                    </label>
+                </form>
+            </div>
+
+            @if (Model.Products.Count > 0)
+            {
+                <div class="product-grid">
+                    @foreach (var product in Model.Products)
+                    {
+                        @await Html.PartialAsync("_ProductCard", product)
+                    }
+                </div>
+
+                @if (Model.TotalPages > 1)
+                {
+                    <nav class="pagination" aria-label="التنقل بين صفحات المنتجات">
+
+                        @if (Model.Page > 1)
+                        {
+                            <a asp-action="Index" asp-route-q="@Model.Query" asp-route-category="@Model.Category"
+                               asp-route-brand="@Model.Brand" asp-route-minPrice="@Model.MinPrice"
+                               asp-route-maxPrice="@Model.MaxPrice" asp-route-sort="@Model.Sort" asp-route-page="@(Model.Page - 1)"
+                               class="pagination-link">
+                                السابق
+                            </a>
+                        }
+
+                        @for (var page = 1; page <= Model.TotalPages; page++)
+                        {
+                            if (page == Model.Page)
+                            {
+                                <span class="pagination-link active" aria-current="page">
+                                    @(page)
+                                </span>
+                            }
+                            else
+                            {
+                                <a asp-action="Index" asp-route-q="@Model.Query" asp-route-category="@Model.Category"
+                                   asp-route-brand="@Model.Brand" asp-route-minPrice="@Model.MinPrice"
+                                   asp-route-maxPrice="@Model.MaxPrice" asp-route-sort="@Model.Sort" asp-route-page="@(page)"
+                                   class="pagination-link">
+                                    @(page)
+                                </a>
+                            }
+                        }
+
+                        @if (Model.Page < Model.TotalPages)
+                        {
+                            <a asp-action="Index" asp-route-q="@Model.Query" asp-route-category="@Model.Category"
+                               asp-route-brand="@Model.Brand" asp-route-minPrice="@Model.MinPrice"
+                               asp-route-maxPrice="@Model.MaxPrice" asp-route-sort="@Model.Sort" asp-route-page="@(Model.Page + 1)"
+                               class="pagination-link">
+                                التالي
+                            </a>
+                        }
+
+                    </nav>
+                }
+            }
+            else
+            {
                 <div class="empty">
                     <div class="empty-icon">⌁</div>
                     <h2>ملقيناش منتجات مطابقة</h2>
-                    <p>جرّب كلمة بحث أو تصفية مختلفة.</p><a class="btn btn-primary" asp-action="Index">عرض كل المنتجات</a>
+                    <p>جرّب كلمة بحث أو تصفية مختلفة.</p>
+
+                    <a class="btn btn-primary" asp-action="Index">
+                        عرض كل المنتجات
+                    </a>
                 </div>
             }
+
         </div>
     </div>
 </div>
 
 @section Scripts {
-<script>
-(function () {
-    var details = document.querySelector('.store-filters__details');
-    if (!details) return;
-    if (window.innerWidth >= 576) {
-        details.open = true;
-    }
-})();
-</script>
+    <script>
+        (function () {
+            var details = document.querySelector('.store-filters__details');
+
+            if (!details) return;
+
+            if (window.innerWidth >= 576) {
+                details.open = true;
+            }
+        })();
+    </script>
 }

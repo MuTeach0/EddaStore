@@ -1,3 +1,19 @@
-using EddaStore.Data;using EddaStore.Models.Products;using EddaStore.Models.ViewModels.Store;using EddaStore.Services.Interfaces;using Microsoft.EntityFrameworkCore;
+using EddaStore.Data;
+using EddaStore.Models.Products;
+using EddaStore.Models.ViewModels.Store;
+using EddaStore.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 namespace EddaStore.Services;
-public class StoreCatalogService(ApplicationDbContext context):IStoreCatalogService { public async Task<StoreIndexViewModel> GetAsync(StoreIndexViewModel m,CancellationToken ct=default){m.Page=Math.Max(1,m.Page);m.PageSize=12;var q=context.Products.AsNoTracking().Where(x=>!x.IsDeleted && (!x.IsActive || x.StockQuantity>0)).Include(x=>x.Category).Include(x=>x.Brand).Include(x=>x.Images).AsQueryable();if(!string.IsNullOrWhiteSpace(m.Query)){var s=m.Query.Trim();q=q.Where(x=>x.Name.Contains(s)||x.Slug.Contains(s)||(x.SKU??"").Contains(s));}if(!string.IsNullOrWhiteSpace(m.Category))q=q.Where(x=>x.Category.Slug==m.Category);if(!string.IsNullOrWhiteSpace(m.Brand))q=q.Where(x=>x.Brand.Slug==m.Brand);if(m.MinPrice.HasValue)q=q.Where(x=>x.Price>=m.MinPrice);if(m.MaxPrice.HasValue)q=q.Where(x=>x.Price<=m.MaxPrice);m.TotalCount=await q.CountAsync(ct);q=m.Sort switch{"price_asc"=>q.OrderBy(x=>x.Price),"price_desc"=>q.OrderByDescending(x=>x.Price),"name"=>q.OrderBy(x=>x.Name),_=>q.OrderByDescending(x=>x.Id)};m.Products=await q.Skip((m.Page-1)*m.PageSize).Take(m.PageSize).ToListAsync(ct);m.Categories=await context.Categories.AsNoTracking().OrderBy(x=>x.Name).ToListAsync(ct);m.Brands=await context.Brands.AsNoTracking().OrderBy(x=>x.Name).ToListAsync(ct);return m;}public Task<Product?> GetDetailsAsync(string slug,CancellationToken ct=default)=>context.Products.AsNoTracking().Include(x=>x.Category).Include(x=>x.Brand).Include(x=>x.Images).FirstOrDefaultAsync(x=>x.Slug==slug&&!x.IsDeleted,ct);}
+
+public class StoreCatalogService(ApplicationDbContext context) : IStoreCatalogService
+{
+    public async Task<StoreIndexViewModel> GetAsync(StoreIndexViewModel m, CancellationToken ct = default)
+    {
+        m.Page = Math.Max(1, m.Page);
+        m.PageSize = 12;
+        var q = context.Products.AsNoTracking().Where(x => !x.IsDeleted && (!x.IsActive || x.StockQuantity > 0)).Include(x => x.Category).Include(x => x.Brand).Include(x => x.Images).AsQueryable(); if (!string.IsNullOrWhiteSpace(m.Query)) { var s = m.Query.Trim(); q = q.Where(x => x.Name.Contains(s) || x.Slug.Contains(s) || (x.SKU ?? "").Contains(s)); }
+        if (!string.IsNullOrWhiteSpace(m.Category)) q = q.Where(x => x.Category.Slug == m.Category); if (!string.IsNullOrWhiteSpace(m.Brand)) q = q.Where(x => x.Brand.Slug == m.Brand); if (m.MinPrice.HasValue) q = q.Where(x => x.Price >= m.MinPrice); if (m.MaxPrice.HasValue) q = q.Where(x => x.Price <= m.MaxPrice); m.TotalCount = await q.CountAsync(ct); q = m.Sort switch { "price_asc" => q.OrderBy(x => x.Price), "price_desc" => q.OrderByDescending(x => x.Price), "name" => q.OrderBy(x => x.Name), _ => q.OrderByDescending(x => x.Id) }; m.Products = await q.Skip((m.Page - 1) * m.PageSize).Take(m.PageSize).ToListAsync(ct); m.Categories = await context.Categories.AsNoTracking().OrderBy(x => x.Name).ToListAsync(ct); m.Brands = await context.Brands.AsNoTracking().OrderBy(x => x.Name).ToListAsync(ct); return m;
+    }
+    public Task<Product?> GetDetailsAsync(string slug, CancellationToken ct = default) =>
+     context.Products.AsNoTracking().Include(x => x.Category).Include(x => x.Brand).Include(x => x.Images).FirstOrDefaultAsync(x => x.Slug == slug && !x.IsDeleted, ct);
+}
