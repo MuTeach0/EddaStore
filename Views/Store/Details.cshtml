@@ -8,10 +8,15 @@
             ? Model.Description[..155]
             : Model.Description);
 
-    var image = Model.Images
+    var orderedImages = Model.Images
+        .Where(i => !string.IsNullOrWhiteSpace(i.ImageUrl))
         .OrderByDescending(i => i.IsPrimary)
         .ThenBy(i => i.SortOrder)
-        .FirstOrDefault();
+        .GroupBy(i => i.ImageUrl.Trim(), StringComparer.OrdinalIgnoreCase)
+        .Select(g => g.First())
+        .ToList();
+
+    var image = orderedImages.FirstOrDefault();
 
     ViewData["OgType"] = "product";
     var productOgImage = image?.ImageUrl;
@@ -92,19 +97,16 @@
         </section>
         <div class="container section">
             <section class="detail-grid">
-                <div class="detail-image product-gallery" id="productGallery" tabindex="0" role="region"
+                <div class="product-gallery" id="productGallery" tabindex="0" role="region"
                      aria-label="معرض صور المنتج">
                     @{
-                        var orderedImages = Model.Images
-                            .Where(i => !string.IsNullOrWhiteSpace(i.ImageUrl))
-                            .OrderByDescending(i => i.IsPrimary)
-                            .ThenBy(i => i.SortOrder)
-                            .ToList();
                         var mainImage = orderedImages.FirstOrDefault();
                     }
                     @if (mainImage is not null)
                     {
-                        <img id="productMainImage" src="@mainImage.ImageUrl" alt="@(mainImage.AltText ?? Model.Name)" fetchpriority="high" />
+                        <div class="detail-image">
+                            <img id="productMainImage" src="@mainImage.ImageUrl" alt="@(mainImage.AltText ?? Model.Name)" fetchpriority="high" />
+                        </div>
                         @if (orderedImages.Count > 1)
                         {
                             <div class="product-gallery-controls">
